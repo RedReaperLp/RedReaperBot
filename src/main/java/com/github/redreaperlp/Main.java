@@ -1,6 +1,7 @@
 package com.github.redreaperlp;
 
-import com.github.redreaperlp.events.onUserJoin;
+import com.github.redreaperlp.commands.BanCommand;
+import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.mysql.DataStorage;
 import com.github.redreaperlp.util.Config;
 import com.zaxxer.hikari.HikariConfig;
@@ -8,13 +9,16 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 
 public class Main {
 
@@ -55,8 +59,8 @@ public class Main {
 
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + data.host() + ":" + data.port() + "/" + data.database());
-        config.setUsername(conf.getConfig("mysql.user"));
-        config.setPassword(conf.getConfig("mysql.password"));
+        config.setUsername(data.user());
+        config.setPassword(data.password());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -72,13 +76,26 @@ public class Main {
 
         JDABuilder build = JDABuilder.createDefault(conf.getConfig("token"));
         enableIntents(build);
+        build.setActivity(Activity.playing(conf.getConfig("playing")));
         build.setStatus(OnlineStatus.ONLINE);
-        build.addEventListeners(new onUserJoin());
+        build.addEventListeners(new OnUserJoin());
+        build.addEventListeners(new BanCommand());
 
         JDA jda = build.build();
         jda.awaitReady();
         System.out.println(GREEN + "*** Bot is ready! ***" + RESET);
 
+//        List<Guild> servers = jda.getGuilds();
+//        for (Guild server : servers) {
+//            server.updateCommands().addCommands().queue(); //To add commands on all servers
+//        }
+        Guild server = jda.getGuildById("591985618469257218");
+        server.updateCommands().addCommands(
+                Commands.slash("ban","Bans a user").
+                        addOption(OptionType.USER, "user" , "The user to ban", true).
+                        addOption(OptionType.STRING, "reason", "The reason for the ban", true).
+                        addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false)
+        ).queue();
     }
 
     public void prepareTables() {
