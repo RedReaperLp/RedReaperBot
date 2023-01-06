@@ -1,0 +1,45 @@
+// This is the config file for the bot.
+// You can change the settings here.
+// If you want to change the settings, you have to restart the bot.
+
+// token: The token of the bot can be found on the discord developer page(https://discord.com/developers/applications).
+// playing: The status of the bot.
+
+// mysql.host: localhost or an ip
+// mysql.port: default 3306
+// mysql.database: database name
+// mysql.user: username
+// mysql.password: password
+
+
+token[]prefix[!!]
+playing[with the config]
+
+mysql.host[localhost]
+mysql.port[3306]
+mysql.database[reaperbot]
+mysql.user[root]
+mysql.password[password]
+// This is the config file for the bot.
+// You can change the settings here.
+// If you want to change the settings, you have to restart the bot.
+
+// token: The token of the bot can be found on the discord developer page(https://discord.com/developers/applications).
+// playing: The status of the bot.
+
+// mysql.host: localhost or an ip
+// mysql.port: default 3306
+// mysql.database: database name
+// mysql.user: username
+// mysql.password: password
+
+
+token[]prefix[!!]
+playing[with the config]
+
+mysql.host[localhost]
+mysql.port[3306]
+mysql.database[reaperbot]
+mysql.user[root]
+mysql.password[password]
+prefix[!!]
