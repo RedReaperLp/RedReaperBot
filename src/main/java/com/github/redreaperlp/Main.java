@@ -2,9 +2,7 @@ package com.github.redreaperlp;
 
 import com.github.redreaperlp.commands.BanCommand;
 import com.github.redreaperlp.events.OnUserJoin;
-import com.github.redreaperlp.mysql.DataStorage;
 import com.github.redreaperlp.util.Config;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -16,7 +14,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -39,40 +36,7 @@ public class Main {
         System.out.println(GREEN + "*** Starting Bot ***" + RESET);
         System.out.println(GREEN + "*** Version:" + YELLOW + " 1.0.0 " + GREEN + "***" + RESET);
         conf.saveConfig();
-        DataStorage data = new DataStorage(conf);
 
-        Connection con = DriverManager.getConnection("jdbc:mysql://" + data.host() + ":" + data.port(), data.user(), data.password());
-        PreparedStatement ps = con.prepareStatement("USE " + data.database());
-        try {
-            ps.execute();
-        } catch (SQLException e) {
-            System.out.println(RED + "*** The database does not exist! ***" + RESET);
-            System.out.println(YELLOW + "*** Creating database... ***" + RESET);
-            PreparedStatement stmt = con.prepareStatement("CREATE DATABASE IF NOT EXISTS " + data.database());
-            stmt.executeUpdate();
-            System.out.println(GREEN + "*** Database created! ***" + RESET);
-            con.close();
-            stmt.close();
-        }
-        ps.close();
-
-
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + data.host() + ":" + data.port() + "/" + data.database());
-        config.setUsername(data.user());
-        config.setPassword(data.password());
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        try {
-            ds = new HikariDataSource(config);
-        } catch (Exception e) {
-            System.out.println(RED + "*** Could not connect to the database! " + YELLOW + " (" + e.getMessage() + ") " + RED + "***" + RESET);
-            System.exit(0);
-        }
-        System.out.println(GREEN + "*** Connected to the database! ***" + RESET);
-
-        prepareTables();
 
         JDABuilder build = JDABuilder.createDefault(conf.getConfig("token"));
         enableIntents(build);
@@ -91,8 +55,8 @@ public class Main {
 //        }
         Guild server = jda.getGuildById("591985618469257218");
         server.updateCommands().addCommands(
-                Commands.slash("ban","Bans a user").
-                        addOption(OptionType.USER, "user" , "The user to ban", true).
+                Commands.slash("ban", "Bans a user").
+                        addOption(OptionType.USER, "user", "The user to ban", true).
                         addOption(OptionType.STRING, "reason", "The reason for the ban", true).
                         addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false)
         ).queue();

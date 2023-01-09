@@ -96,33 +96,16 @@ public class Config {
                 "// token: The token of the bot can be found on the discord developer page(https://discord.com/developers/applications).\n" +
                 "// playing: The status of the bot.\n" +
                 "\n" +
-                "// mysql.host: localhost or an ip\n" +
-                "// mysql.port: default 3306\n" +
-                "// mysql.database: database name\n" +
-                "// mysql.user: username\n" +
-                "// mysql.password: password\n" +
-                "\n" +
                 "\n" +
                 "token[]\n" +
                 "prefix[!!]\n" +
-                "playing[with the config]\n" +
-                "\n" +
-                "mysql.host[localhost]\n" +
-                "mysql.port[3306]\n" +
-                "mysql.database[reaperbot]\n" +
-                "mysql.user[root]\n" +
-                "mysql.password[password]");
+                "playing[with the config]");
     }
 
     public void checkContaining() {
         this.contains("token", "token here");
         this.contains("prefix", "!!");
         this.contains("playing", "with the config");
-        this.contains("mysql.host", "localhost");
-        this.contains("mysql.port", "3306");
-        this.contains("mysql.database", "reaperbot");
-        this.contains("mysql.user", "root");
-        this.contains("mysql.password", "password");
     }
 }
 
