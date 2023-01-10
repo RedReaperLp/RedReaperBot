@@ -36,7 +36,7 @@ public class Servers {
         }
     }
 
-    public void resolve() {
+    public void resolver() {
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -96,6 +96,14 @@ public class Servers {
     public void removeUser(int id, int server) {
         try {
             servers.getJSONObject(String.valueOf(server)).remove(String.valueOf(id));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean containsUser(int id, int server) {
+        try {
+            return servers.getJSONObject(String.valueOf(server)).has(String.valueOf(id));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
