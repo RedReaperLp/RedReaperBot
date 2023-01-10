@@ -42,6 +42,7 @@ public class Main {
         JDABuilder build = JDABuilder.createDefault(conf.getConfig("token"));
         build.setActivity(Activity.playing(conf.getConfig("playing")));
         build.setStatus(OnlineStatus.ONLINE);
+        build.setEventPassthrough(true);
         build.addEventListeners(new OnUserJoin());
         build.addEventListeners(new BanCommand());
         build.addEventListeners(new RegisterUser());
@@ -63,11 +64,7 @@ public class Main {
                     Commands.slash("register", "Register yourself to the server")
             ).queue();
         }
-        new Thread(new FinalizerThread()).start();
-//        while (true) {
-//            new Thread(new FinalizerThread()).start();
-//            TimeUnit.MILLISECONDS.sleep(1);
-//        }
+        new Thread(new FinalizerThread(servers)).start();
     }
 
     public void enableIntents(JDABuilder build) {
