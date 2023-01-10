@@ -14,8 +14,7 @@ repositories {
 
 dependencies {
     implementation("net.dv8tion:JDA:5.0.0-beta.2")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("mysql:mysql-connector-java:8.0.31")
+    implementation("org.json:json:20090211")
 
 }
 

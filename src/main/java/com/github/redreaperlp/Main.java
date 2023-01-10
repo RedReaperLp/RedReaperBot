@@ -3,29 +3,33 @@ package com.github.redreaperlp;
 import com.github.redreaperlp.commands.BanCommand;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.Config;
-import com.zaxxer.hikari.HikariDataSource;
+import com.github.redreaperlp.util.Servers;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 public class Main {
 
+    static Servers servers = new Servers();
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
     String RESET = "\u001B[0m";
 
     public static Config conf = new Config();
-    public static HikariDataSource ds;
 
     public static void main(String[] args) throws InterruptedException, SQLException {
         Main main = new Main();
@@ -49,39 +53,31 @@ public class Main {
         jda.awaitReady();
         System.out.println(GREEN + "*** Bot is ready! ***" + RESET);
 
-//        List<Guild> servers = jda.getGuilds();
-//        for (Guild server : servers) {
-//            server.updateCommands().addCommands().queue(); //To add commands on all servers
-//        }
-        Guild server = jda.getGuildById("591985618469257218");
-        server.updateCommands().addCommands(
-                Commands.slash("ban", "Bans a user").
-                        addOption(OptionType.USER, "user", "The user to ban", true).
-                        addOption(OptionType.STRING, "reason", "The reason for the ban", true).
-                        addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false)
-        ).queue();
-    }
+        List<Guild> currentServers = jda.getGuilds();
 
-    public void prepareTables() {
-        try {
-            Connection con = ds.getConnection();
-            createTable("users", con, con.prepareStatement("CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT, discord_id VARCHAR(18) NOT NULL, PRIMARY KEY (id))"));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+        for (Guild g : currentServers) {
+            servers.addServer(g.getId());
+            System.out.println(g.getName());
+            g.loadMembers().onSuccess(members -> {
+                for (Member member : members) {
+                    User user = member.getUser();
+                    if (user.isBot()) {
+                        continue;
+                    }
+                    System.out.println(user.getName());
+                    servers.addUser(user.getId(), g.getId());
+                }
+            });
 
-    public void createTable(String table, Connection con, PreparedStatement stmt) throws SQLException {
-        try {
-            PreparedStatement ps = con.prepareStatement("SELECT 1 FROM " + table + " LIMIT 1");
-            ps.executeQuery();
-            ps.close();
-        } catch (SQLException e) {
-            System.out.println(YELLOW + "*** Table " + table + " does not exist! ***" + RESET);
-            System.out.println(YELLOW + "*** Creating... ***" + RESET);
-            stmt.executeUpdate();
-            System.out.println(GREEN + "*** Table " + table + " created! ***" + RESET);
+            g.updateCommands().addCommands(Commands.slash("register", "Register yourself to the server")).queue();
+            g.updateCommands().addCommands(
+                    Commands.slash("ban", "Bans a user").
+                            addOption(OptionType.USER, "user", "The user to ban", true).
+                            addOption(OptionType.STRING, "reason", "The reason for the ban", true).
+                            addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false)
+            ).queue();
         }
+        servers.finalizer();
     }
 
     public void enableIntents(JDABuilder build) {
