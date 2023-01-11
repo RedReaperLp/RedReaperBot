@@ -1,6 +1,5 @@
 package com.github.redreaperlp;
 
-import com.github.redreaperlp.commands.BanCommand;
 import com.github.redreaperlp.commands.RegisterUser;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.Config;
@@ -61,7 +60,8 @@ public class Main {
                             addOption(OptionType.USER, "user", "The user to ban", true).
                             addOption(OptionType.STRING, "reason", "The reason for the ban", true).
                             addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false),
-                    Commands.slash("register", "Register yourself to the server")
+                    Commands.slash("register", "Register yourself to the server"),
+                    Commands.user("register")
             ).queue();
         }
         new Thread(new FinalizerThread(servers)).start();

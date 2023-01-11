@@ -36,6 +36,10 @@ public class Servers {
         }
     }
 
+    /**
+     * Resolves the StorageFile and returns it to the local variable #servers
+     * @see #servers
+     */
     public void resolver() {
         if (!file.exists()) {
             try {
@@ -72,10 +76,15 @@ public class Servers {
         return ids;
     }
 
+    /**
+     * Adds a Server to Config, if it isn´t already
+     * @param id ID of the Server in String format
+     */
     public void addServer(String id) {
         try {
-            System.out.println(id);
-            servers.put(id, new JSONObject());
+            if (!servers.has(id)) {
+                servers.put(id, new JSONObject());
+            }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
