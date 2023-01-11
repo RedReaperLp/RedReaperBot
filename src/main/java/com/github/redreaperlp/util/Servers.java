@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.github.redreaperlp.enums.UserObject.STATS;
+import static com.github.redreaperlp.enums.UserObject.*;
 
 public class Servers {
     File file = new File("storage.json");
@@ -108,36 +108,31 @@ public class Servers {
         }
     }
 
+    public JSONObject getServer(Guild guild) {
+        try {
+            return serversObj.getJSONObject(guild.getId());
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
+    }
+
     public void removeServer(int id) {
         serversObj.remove(String.valueOf(id));
         changes = true;
     }
 
-    public void addUser(User user, Guild server) {
+    public void addUser(Guild server, User user) {
         try {
             if (!serversObj.has(server.getId())) {
-                JSONObject serverObj = new JSONObject();
-                serverObj.put("users", new JSONObject());
-                serversObj.put(server.getId(), serverObj);
-                changes = true;
+                addServer(server);
             }
 
-            JSONObject obj = serversObj.getJSONObject(server.getId());
-            if (!obj.has(user.getId())) {
-                obj.put(user.getId(), new JSONObject().put("name", user.getName()));
-                changes = true;
-            }
-            JSONObject userObj = obj.getJSONObject(user.getId());
-            if (!userObj.has("name")) {
-                userObj.put("name", user.getName());
-                changes = true;
-            } else if (!userObj.has(STATS.key())) {
-                obj.put(user.getId(), userObj.put(STATS.key(), new JSONObject())).put(UserObject.STATS_CHATPOINT.key(), 0);
-                changes = true;
-            }
-            JSONObject statsObj = userObj.getJSONObject(STATS.key());
-            if (!statsObj.has(UserObject.STATS_CHATPOINT.key())) {
-                statsObj.put(UserObject.STATS_CHATPOINT.key(), 0);
+            JSONObject serverObject = serversObj.getJSONObject(server.getId());
+            if (!serverObject.has(user.getId())) {
+                serverObject.put(user.getId(), new JSONObject()
+                        .put(UserObject.NAME.key(), user.getName())
+                        .put(STATS.key(), new JSONObject()
+                                .put(STATS_CHATPOINT.key(), 0)));
                 changes = true;
             }
         } catch (JSONException e) {
@@ -176,26 +171,50 @@ public class Servers {
         }
     }
 
-    public void setUser(Guild server, User user, UserObject key, JSONObject value) {
+    public void setUser(Guild server, User user, UserObject key) {
         try {
             JSONObject serverObj = serversObj.getJSONObject(server.getId());
-            JSONObject temp = serverObj.getJSONObject(user.getId());
-            JSONObject stats = temp.getJSONObject(STATS.key());
             switch (key) {
-                case STATS, NAME -> temp.put(user.getId() ,setHelper(temp, key, value));
-                case STATS_CHATPOINT -> stats.put(STATS.key() ,setHelper(temp.getJSONObject("stats"), key, value));
+                case STATS -> {
+                    serverObj.put("stats", new JSONObject().put("chatpoints", 0));
+                }
+                case NAME -> {
+                    serverObj.getJSONObject(user.getId()).put("name", user.getName());
+                }
+                case STATS_CHATPOINT -> {
+                    int chatpoints = serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key()).getInt(STATS_CHATPOINT.key());
+                    serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key())
+                            .put(STATS_CHATPOINT.key(), chatpoints + 1)
+                            .put(STATS_LEVEL.key(), calcLevel(chatpoints + 1));
+
+                }
             }
+            changes = true;
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private JSONObject setHelper(JSONObject object, UserObject key, JSONObject value) {
-        try {
-            return object.put(key.key(), value);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
+    public int calcLevel(int chatpoints) {
+        int level = 0;
+        int pointCost = 10;
+        while (chatpoints > pointCost) {
+            level++;
+            pointCost += level * 1.3;
+            chatpoints -= pointCost;
         }
+        return level == 0 ? 1 : level;
+    }
+
+    public int calcRemaining(int chatpoints) {
+        int level = 0;
+        int pointCost = 10;
+        while (chatpoints > pointCost) {
+            level++;
+            pointCost += level * 1.3;
+            chatpoints -= pointCost;
+        }
+        return pointCost - chatpoints;
     }
 }
 
