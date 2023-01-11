@@ -1,6 +1,6 @@
 package com.github.redreaperlp;
 
-import com.github.redreaperlp.commands.RegisterUser;
+import com.github.redreaperlp.commands.Commands;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.Servers;
@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.sql.SQLException;
@@ -43,8 +42,7 @@ public class Main {
         build.setStatus(OnlineStatus.ONLINE);
         build.setEventPassthrough(true);
         build.addEventListeners(new OnUserJoin());
-        build.addEventListeners(new BanCommand());
-        build.addEventListeners(new RegisterUser());
+        build.addEventListeners(new Commands());
         enableIntents(build);
 
         JDA jda = build.build();
@@ -54,14 +52,14 @@ public class Main {
         List<Guild> currentServers = jda.getGuilds();
         servers.resolver();
         for (Guild g : currentServers) {
-            servers.addServer(g.getId());
+            servers.addServer(g);
             g.updateCommands().addCommands(
-                    Commands.slash("ban", "Bans a user").
+                    net.dv8tion.jda.api.interactions.commands.build.Commands.slash("ban", "Bans a user").
                             addOption(OptionType.USER, "user", "The user to ban", true).
                             addOption(OptionType.STRING, "reason", "The reason for the ban", true).
                             addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false),
-                    Commands.slash("register", "Register yourself to the server"),
-                    Commands.user("register")
+                    net.dv8tion.jda.api.interactions.commands.build.Commands.slash("register", "Register yourself to the server"),
+                    net.dv8tion.jda.api.interactions.commands.build.Commands.user("register")
             ).queue();
         }
         new Thread(new FinalizerThread(servers)).start();
