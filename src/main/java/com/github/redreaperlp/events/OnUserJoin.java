@@ -21,6 +21,4 @@ public class OnUserJoin extends ListenerAdapter {
         eb.setFooter("Bot made by RedReaperLP", "https://cdn.discordapp.com/attachments/1060601917878829226/1060602918824312924/image.png");
         channel.sendMessageEmbeds(eb.build()).queue();
     }
-
-
 }

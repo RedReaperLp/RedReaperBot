@@ -187,7 +187,7 @@ public class Servers {
                     int chatpoints = serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key()).getInt(STATS_CHATPOINT.key());
                     serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key())
                             .put(STATS_CHATPOINT.key(), chatpoints + 1)
-                            .put(STATS_LEVEL.key(), calcLevel(chatpoints + 1));
+                            .put(STATS_LEVEL.key(), calcExp(chatpoints + 1));
 
                 }
             }
@@ -197,7 +197,7 @@ public class Servers {
         }
     }
 
-    public int calcLevel(int chatpoints) {
+    public int[] calcExp(int chatpoints) {
         int level = 0;
         int pointCost = 10;
         while (chatpoints > pointCost) {
@@ -205,18 +205,7 @@ public class Servers {
             pointCost += level * 1.3;
             chatpoints -= pointCost;
         }
-        return level == 0 ? 1 : level;
-    }
-
-    public int calcRemaining(int chatpoints) {
-        int level = 0;
-        int pointCost = 10;
-        while (chatpoints > pointCost) {
-            level++;
-            pointCost += level * 1.3;
-            chatpoints -= pointCost;
-        }
-        return pointCost - chatpoints;
+        return new int[]{level == 0 ? 1 : level, chatpoints};
     }
 }
 

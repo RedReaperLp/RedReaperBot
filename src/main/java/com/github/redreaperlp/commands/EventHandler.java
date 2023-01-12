@@ -1,18 +1,24 @@
 package com.github.redreaperlp.commands;
 
 import com.github.redreaperlp.Main;
+import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.UserObject;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 public class EventHandler extends ListenerAdapter {
     String RED = "\u001B[31m";
@@ -28,10 +34,12 @@ public class EventHandler extends ListenerAdapter {
             e.getChannel().sendMessage("This command is not yet implemented!").addActionRow(
                     Button.danger("register", "Register")
             ).queue();
-        } else if (e.getName().equals("ban")) {
+        } else if (e.getName().equals(CommandEn.BAN.key())) {
             e.getChannel().sendMessage("This command is not yet implemented!").queue();
-        } else if (e.getName().equals("chatpoints")) {
+        } else if (e.getName().equals(CommandEn.CHATPOINTS.key())) {
             chatpoints(e);
+        } else if (e.getName().equals(CommandEn.CLEAR.key())) {
+            clear(e);
         }
     }
 
@@ -68,7 +76,7 @@ public class EventHandler extends ListenerAdapter {
             eb.setTitle("Overview");
             eb.addField("Chatpoints", String.valueOf(points), true);
             eb.addField("Level", String.valueOf(levels), true);
-            eb.addField("Remaining Chatpoints","Needed to level up: " + String.valueOf(Main.servers.calcRemaining(points) + " points"), false);
+            eb.addField("Remaining Chatpoints", "Needed to level up: " + (Main.servers.calcExp(points)[0] + 1) + " points", false);
             eb.setAuthor(e.getGuild().getName(), null, e.getGuild().getIconUrl());
             eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
             eb.setColor(0x00ff00);
@@ -78,11 +86,27 @@ public class EventHandler extends ListenerAdapter {
             eb.setTitle("Overview");
             eb.addField("Chatpoints", "0", true);
             eb.addField("Level", "1", true);
-            eb.addField("Remaining Chatpoints","Needed to level up: 10 points", false);
+            eb.addField("Remaining Chatpoints", "Needed to level up: 23 points", false);
             eb.setAuthor(e.getGuild().getName(), null, e.getGuild().getIconUrl());
             eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
             eb.setColor(0xff0000);
             e.replyEmbeds(eb.build()).queue();
+        }
+    }
+
+    public void clear(SlashCommandInteractionEvent e) {
+        boolean clearUserMSG = false;
+
+        OptionMapping userOption = e.getOption("user");
+        if (userOption != null) {
+            clearUserMSG = true;
+        }
+
+        int toClear = e.getOption("amount").getAsInt();
+        MessageHistory his = e.getChannel().getHistoryBefore(e.getChannel().getLatestMessageId(), 100).complete();
+        List<Message> messages = his.getRetrievedHistory();
+        for (Message m : messages) {
+            System.out.println(m.getContentRaw());
         }
     }
 }

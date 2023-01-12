@@ -1,7 +1,9 @@
 package com.github.redreaperlp;
 
 import com.github.redreaperlp.commands.EventHandler;
+import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.events.OnUserJoin;
+import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.Servers;
 import com.github.redreaperlp.util.thread.FinalizerThread;
@@ -10,8 +12,8 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.sql.SQLException;
@@ -19,15 +21,17 @@ import java.util.List;
 
 public class Main {
 
-    public static Servers servers = new Servers();
+    public static Servers servers;
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
     String RESET = "\u001B[0m";
 
-    public static Config conf = new Config();
+    public static Config conf;
 
     public static void main(String[] args) throws InterruptedException, SQLException {
+        conf = new Config();
+        servers = new Servers();
         Main main = new Main();
         main.start();
     }
@@ -37,7 +41,6 @@ public class Main {
         System.out.println(GREEN + "*** Version:" + YELLOW + " 1.0.0 " + GREEN + "***" + RESET);
         conf.saveConfig();
 
-
         JDABuilder build = JDABuilder.createDefault(conf.getConfig("token"));
         build.setActivity(Activity.playing(conf.getConfig("playing")));
         build.setStatus(OnlineStatus.ONLINE);
@@ -45,8 +48,25 @@ public class Main {
         build.addEventListeners(new OnUserJoin());
         build.addEventListeners(new EventHandler());
         enableIntents(build);
-
-        JDA jda = build.build();
+        JDA jda = null;
+        int tryCount = 0;
+        while (jda == null) {
+            try {
+                jda = build.build();
+            } catch (Exception e) {
+                if (e.getMessage().contains("UnknownHostException")) {
+                    if (tryCount == 5) {
+                        System.out.println("Could not connect to Discord. Please check your internet connection.");
+                        System.exit(0);
+                    }
+                    System.out.println(RED + "Make sure, you have a wifi Connection, retry in 5 Seconds" + RESET);
+                    tryCount++;
+                    Thread.sleep(5000);
+                } else {
+                    System.exit(0);
+                }
+            }
+        }
         jda.awaitReady();
         System.out.println(GREEN + "*** Bot is ready! ***" + RESET);
 
@@ -55,14 +75,11 @@ public class Main {
         for (Guild g : currentServers) {
             servers.addServer(g);
             g.updateCommands().addCommands(
-                    Commands.slash("ban", "Bans a user").
-                            addOption(OptionType.USER, "user", "The user to ban", true).
-                            addOption(OptionType.STRING, "reason", "The reason for the ban", true).
-                            addOption(OptionType.INTEGER, "days", "The amount of days to delete messages", false),
+                    prepareCommand(CommandEn.BAN),
                     Commands.slash("register", "Register yourself to the server"),
                     Commands.user("register"),
-                    Commands.slash("chatpoints", "Shows your chatpoints")
-
+                    prepareCommand(CommandEn.CHATPOINTS),
+                    prepareCommand(CommandEn.CLEAR)
             ).queue();
         }
         new Thread(new FinalizerThread(servers)).start();
@@ -79,4 +96,16 @@ public class Main {
         build.enableIntents(GatewayIntent.GUILD_VOICE_STATES);
         build.enableIntents(GatewayIntent.SCHEDULED_EVENTS);
     }
+
+    public SlashCommandData prepareCommand(CommandEn c) {
+        SlashCommandData command = Commands.slash(c.key(), c.description());
+        CommandOptions[] ops = c.options();
+        if (ops != null) {
+            for (CommandOptions options : ops) {
+                command.addOption(options.type(), options.name(), options.description(), options.forced());
+            }
+        }
+        return command;
+    }
+
 }
