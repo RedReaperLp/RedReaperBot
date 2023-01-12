@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
@@ -31,7 +30,7 @@ public class Main {
 
     public static Config conf;
 
-    public static void main(String[] args) throws InterruptedException, SQLException {
+    public static void main(String[] args) throws InterruptedException {
         Runtime runtime = Runtime.getRuntime();
         runtime.addShutdownHook(new Thread(new SaveCaller()));
         conf = new Config();
