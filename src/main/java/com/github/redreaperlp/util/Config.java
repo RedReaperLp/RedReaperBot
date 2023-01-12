@@ -1,5 +1,7 @@
 package com.github.redreaperlp.util;
 
+import com.github.redreaperlp.enums.ConfEnum;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,21 +66,6 @@ public class Config {
         }
     }
 
-    public boolean contains(String pos) {
-        for (String s : config) {
-            if (s.startsWith(pos + "[")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void contains(String pos, String value) {
-        if (!this.contains(pos)) {
-            this.setConfig(pos, value);
-        }
-    }
-
     public String getConfig(String pos) {
         for (String s : config) {
             if (s.startsWith(pos + "[")) {
@@ -94,19 +81,35 @@ public class Config {
                 "// If you want to change the settings, you have to restart the bot.\n" +
                 "\n" +
                 "// token: The token of the bot can be found on the discord developer page(https://discord.com/developers/applications).\n" +
-                "// playing: The status of the bot.\n" +
-                "\n" +
-                "\n" +
-                "token[]\n" +
-                "prefix[!!]\n" +
-                "playing[with the config]");
+                "// playing: The status of the bot.\n"
+        );
     }
 
     public void checkContaining() {
-        this.contains("token", "token here");
-        this.contains("prefix", "!!");
-        this.contains("playing", "with the config");
-        this.contains("storage", "storage.json");
+        this.contains(ConfEnum.TOKEN);
+        this.contains(ConfEnum.PLAYING);
+        this.contains(ConfEnum.STORAGE);
+    }
+
+    public void contains(ConfEnum e) {
+        if (!this.contains(e.key())) {
+            this.setConfig(e.key(), e.defaultValue());
+        }
+    }
+
+    public void contains(String pos, String value) {
+        if (!this.contains(pos)) {
+            this.setConfig(pos, value);
+        }
+    }
+
+    public boolean contains(String pos) {
+        for (String s : config) {
+            if (s.startsWith(pos + "[")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

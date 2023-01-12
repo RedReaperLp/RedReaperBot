@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,43 +27,45 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent e) {
-        System.out.println(e.getName());
-        Main.servers.addUser(e.getGuild(), e.getUser());
-        if (e.getName().equals("register")) {
-            e.getChannel().sendMessage("This command is not yet implemented!").addActionRow(
-                    Button.danger("register", "Register")
-            ).queue();
-        } else if (e.getName().equals(CommandEn.BAN.key())) {
-            e.getChannel().sendMessage("This command is not yet implemented!").queue();
-        } else if (e.getName().equals(CommandEn.CHATPOINTS.key())) {
-            chatpoints(e);
-        } else if (e.getName().equals(CommandEn.CLEAR.key())) {
-            clear(e);
+        if (e.isFromGuild()) {
+            System.out.println(e.getName());
+            Main.servers.addUser(e.getGuild(), e.getUser());
+            if (e.getName().equals(CommandEn.BAN.key())) {
+                e.getChannel().sendMessage("This command is not yet implemented!").queue();
+            } else if (e.getName().equals(CommandEn.CHATPOINTS.key())) {
+                chatpoints(e);
+            } else if (e.getName().equals(CommandEn.CLEAR.key())) {
+                clear(e);
+            }
         }
     }
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent e) {
         super.onButtonInteraction(e);
-        Main.servers.addUser(e.getGuild(), e.getUser());
-        if (e.getButton().getId().equals("register")) {
-            e.reply("This command is not yet implemented!").setEphemeral(true).queue();
+        if (e.isFromGuild()) {
+            Main.servers.addUser(e.getGuild(), e.getUser());
         }
     }
 
     @Override
     public void onUserContextInteraction(UserContextInteractionEvent e) {
-        Main.servers.addUser(e.getGuild(), e.getUser());
-        e.reply("This command is not yet implemented!").setEphemeral(true).queue();
+        if (e.isFromGuild()) {
+            Main.servers.addUser(e.getGuild(), e.getUser());
+            e.reply("This command is not yet implemented!").setEphemeral(true).queue();
+        }
     }
 
     public void onMessageReceived(MessageReceivedEvent e) {
-        Guild guild = e.getGuild();
-        User user = e.getAuthor();
+        if (e.isFromGuild()) {
+            Guild guild = e.getGuild();
+            User user = e.getAuthor();
 
-        Main.servers.addUser(guild, user);
-        Main.servers.setUser(guild, user, UserObject.STATS_CHATPOINT);
-        Main.servers.finalizer();
+            Main.servers.addUser(guild, user);
+            Main.servers.setUser(guild, user, UserObject.STATS_CHATPOINT);
+        } else {
+
+        }
     }
 
     public void chatpoints(SlashCommandInteractionEvent e) {
@@ -105,8 +106,28 @@ public class EventHandler extends ListenerAdapter {
         int toClear = e.getOption("amount").getAsInt();
         MessageHistory his = e.getChannel().getHistoryBefore(e.getChannel().getLatestMessageId(), 100).complete();
         List<Message> messages = his.getRetrievedHistory();
-        for (Message m : messages) {
-            System.out.println(m.getContentRaw());
+        int cleared = 0;
+
+        if (clearUserMSG) {
+            for (Message msg : messages) {
+                if (msg.getAuthor().equals(userOption.getAsUser())) {
+                    msg.delete().queue();
+                    cleared++;
+                }
+                if (cleared == toClear) {
+                    break;
+                }
+            }
+        } else {
+            for (Message msg : messages) {
+                if (!msg.isEphemeral()) {
+                    cleared++;
+                }
+                msg.delete().queue();
+                if (cleared == toClear) {
+                    break;
+                }
+            }
         }
     }
 }

@@ -2,11 +2,13 @@ package com.github.redreaperlp;
 
 import com.github.redreaperlp.commands.EventHandler;
 import com.github.redreaperlp.enums.CommandEn;
+import com.github.redreaperlp.enums.ConfEnum;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.Servers;
 import com.github.redreaperlp.util.thread.FinalizerThread;
+import com.github.redreaperlp.util.thread.SaveCaller;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -30,19 +32,21 @@ public class Main {
     public static Config conf;
 
     public static void main(String[] args) throws InterruptedException, SQLException {
+        Runtime runtime = Runtime.getRuntime();
+        runtime.addShutdownHook(new Thread(new SaveCaller()));
         conf = new Config();
         servers = new Servers();
         Main main = new Main();
         main.start();
     }
 
-    public void start() throws InterruptedException, SQLException {
+    public void start() throws InterruptedException {
         System.out.println(GREEN + "*** Starting Bot ***" + RESET);
         System.out.println(GREEN + "*** Version:" + YELLOW + " 1.0.0 " + GREEN + "***" + RESET);
         conf.saveConfig();
 
-        JDABuilder build = JDABuilder.createDefault(conf.getConfig("token"));
-        build.setActivity(Activity.playing(conf.getConfig("playing")));
+        JDABuilder build = JDABuilder.createDefault(conf.getConfig(ConfEnum.TOKEN.key()));
+        build.setActivity(Activity.playing(conf.getConfig(ConfEnum.PLAYING.key())));
         build.setStatus(OnlineStatus.ONLINE);
         build.setEventPassthrough(true);
         build.addEventListeners(new OnUserJoin());

@@ -3,9 +3,9 @@ package com.github.redreaperlp.enums;
 import org.json.JSONObject;
 
 public enum UserObject {
-    STATS("stats"),
+    STATS(CommandEn.STATS.key()),
     STATS_LEVEL("level"),
-    STATS_CHATPOINT("chatpoints"),
+    STATS_CHATPOINT(CommandEn.CHATPOINTS.key()),
     NAME("name");
 
 
