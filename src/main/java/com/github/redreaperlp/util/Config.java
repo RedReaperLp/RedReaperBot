@@ -106,6 +106,7 @@ public class Config {
         this.contains("token", "token here");
         this.contains("prefix", "!!");
         this.contains("playing", "with the config");
+        this.contains("storage", "storage.json");
     }
 }
 

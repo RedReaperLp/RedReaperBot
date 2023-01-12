@@ -1,5 +1,6 @@
 package com.github.redreaperlp.util;
 
+import com.github.redreaperlp.Main;
 import com.github.redreaperlp.enums.UserObject;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
@@ -14,7 +15,7 @@ import java.util.List;
 import static com.github.redreaperlp.enums.UserObject.*;
 
 public class Servers {
-    File file = new File("storage.json");
+    File file = new File(Main.conf.getConfig("storage"));
 
     JSONObject serversObj = new JSONObject();
     boolean changes = false;
@@ -130,9 +131,10 @@ public class Servers {
             JSONObject serverObject = serversObj.getJSONObject(server.getId());
             if (!serverObject.has(user.getId())) {
                 serverObject.put(user.getId(), new JSONObject()
-                        .put(UserObject.NAME.key(), user.getName())
-                        .put(STATS.key(), new JSONObject()
-                                .put(STATS_CHATPOINT.key(), 0)));
+                                .put(UserObject.NAME.key(), user.getName())
+                                .put(STATS.key(), new JSONObject()
+                                        .put(STATS_CHATPOINT.key(), 0)
+                                        .put(STATS_LEVEL.key(), 0)));
                 changes = true;
             }
         } catch (JSONException e) {
