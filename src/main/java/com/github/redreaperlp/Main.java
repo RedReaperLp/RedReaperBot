@@ -17,8 +17,12 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.LogManager;
 
 public class Main {
 
@@ -53,6 +57,7 @@ public class Main {
         enableIntents(build);
         JDA jda = null;
         int tryCount = 0;
+        System.out.println(GREEN + "*** Connecting to Discord ***" + RESET);
         while (jda == null) {
             try {
                 jda = build.build();
@@ -65,7 +70,11 @@ public class Main {
                     System.out.println(RED + "Make sure, you have a wifi Connection, retry in 5 Seconds" + RESET);
                     tryCount++;
                     Thread.sleep(5000);
+                } else if (e.getMessage().toLowerCase(Locale.ROOT).contains("token may")) {
+                    System.out.println(RED + "Please check your Token in the config.yaml" + RESET);
+                    System.exit(0);
                 } else {
+                    System.out.println(RED + e.getMessage() + RESET);
                     System.exit(0);
                 }
             }

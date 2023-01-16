@@ -7,10 +7,10 @@ import net.dv8tion.jda.api.entities.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import static com.github.redreaperlp.enums.UserObject.*;
 
@@ -154,10 +154,12 @@ public class Servers {
     public boolean containsUser(User user, Guild server, UserObject object) {
         try {
             switch (object) {
-                case STATS:
+                case STATS -> {
                     return serversObj.getJSONObject(server.getId()).getJSONObject(user.getId()).getJSONObject("stats") != null;
-                case NAME:
+                }
+                case NAME -> {
                     return serversObj.getJSONObject(server.getId()).getJSONObject(user.getId()).getString("name") != null;
+                }
             }
         } catch (JSONException e) {
             return false;
@@ -178,10 +180,10 @@ public class Servers {
             JSONObject serverObj = serversObj.getJSONObject(server.getId());
             switch (key) {
                 case STATS -> {
-                    serverObj.put("stats", new JSONObject().put("chatpoints", 0));
+                    serverObj.put(STATS.key(), new JSONObject().put("chatpoints", 0));
                 }
                 case NAME -> {
-                    serverObj.getJSONObject(user.getId()).put("name", user.getName());
+                    serverObj.getJSONObject(user.getId()).put(NAME.key(), user.getName());
                 }
                 case STATS_CHATPOINT -> {
                     int chatpoints = serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key()).getInt(STATS_CHATPOINT.key());

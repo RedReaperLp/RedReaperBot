@@ -18,10 +18,6 @@ dependencies {
 
 }
 
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
-}
-
 tasks {
     named<ShadowJar>("shadowJar") {
         archiveClassifier.set("")

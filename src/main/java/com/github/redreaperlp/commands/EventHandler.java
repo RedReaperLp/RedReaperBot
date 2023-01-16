@@ -3,11 +3,9 @@ package com.github.redreaperlp.commands;
 import com.github.redreaperlp.Main;
 import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.UserObject;
+import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -28,14 +26,14 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent e) {
         if (e.isFromGuild()) {
-            System.out.println(e.getName());
             Main.servers.addUser(e.getGuild(), e.getUser());
             if (e.getName().equals(CommandEn.BAN.key())) {
                 e.getChannel().sendMessage("This command is not yet implemented!").queue();
             } else if (e.getName().equals(CommandEn.CHATPOINTS.key())) {
                 chatpoints(e);
             } else if (e.getName().equals(CommandEn.CLEAR.key())) {
-                clear(e);
+                e.deferReply().queue();
+                new DeleterThread(e).run();
             }
         }
     }
@@ -92,42 +90,6 @@ public class EventHandler extends ListenerAdapter {
             eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
             eb.setColor(0xff0000);
             e.replyEmbeds(eb.build()).queue();
-        }
-    }
-
-    public void clear(SlashCommandInteractionEvent e) {
-        boolean clearUserMSG = false;
-
-        OptionMapping userOption = e.getOption("user");
-        if (userOption != null) {
-            clearUserMSG = true;
-        }
-
-        int toClear = e.getOption("amount").getAsInt();
-        MessageHistory his = e.getChannel().getHistoryBefore(e.getChannel().getLatestMessageId(), 100).complete();
-        List<Message> messages = his.getRetrievedHistory();
-        int cleared = 0;
-
-        if (clearUserMSG) {
-            for (Message msg : messages) {
-                if (msg.getAuthor().equals(userOption.getAsUser())) {
-                    msg.delete().queue();
-                    cleared++;
-                }
-                if (cleared == toClear) {
-                    break;
-                }
-            }
-        } else {
-            for (Message msg : messages) {
-                if (!msg.isEphemeral()) {
-                    cleared++;
-                }
-                msg.delete().queue();
-                if (cleared == toClear) {
-                    break;
-                }
-            }
         }
     }
 }
