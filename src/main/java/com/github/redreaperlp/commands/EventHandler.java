@@ -2,7 +2,7 @@ package com.github.redreaperlp.commands;
 
 import com.github.redreaperlp.Main;
 import com.github.redreaperlp.enums.CommandEn;
-import com.github.redreaperlp.enums.UserObject;
+import com.github.redreaperlp.enums.JsonSpecifier;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -11,11 +11,8 @@ import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEven
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 public class EventHandler extends ListenerAdapter {
     String RED = "\u001B[31m";
@@ -60,7 +57,7 @@ public class EventHandler extends ListenerAdapter {
             User user = e.getAuthor();
 
             Main.servers.addUser(guild, user);
-            Main.servers.setUser(guild, user, UserObject.STATS_CHATPOINT);
+            Main.chatPoints.increment(Main.servers.getUsers(guild), user);
         } else {
 
         }
@@ -69,13 +66,12 @@ public class EventHandler extends ListenerAdapter {
     public void chatpoints(SlashCommandInteractionEvent e) {
         JSONObject user = Main.servers.getUser(e.getUser(), e.getGuild());
         try {
-            int points = user.getJSONObject(UserObject.STATS.key()).getInt(UserObject.STATS_CHATPOINT.key());
-            int levels = user.getJSONObject(UserObject.STATS.key()).getInt(UserObject.STATS_LEVEL.key());
+            user.put(JsonSpecifier.STATS_CHATPOINT_POINTS.key(), user.getInt(JsonSpecifier.STATS_CHATPOINT_POINTS.key()) + 1);
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Overview");
-            eb.addField("Chatpoints", String.valueOf(points), true);
-            eb.addField("Level", String.valueOf(levels), true);
-            eb.addField("Remaining Chatpoints", "Needed to level up: " + (Main.servers.calcExp(points)[0] + 1) + " points", false);
+            eb.addField("Chatpoints", 1 + "" , true);
+            eb.addField("Level", 1 + "", true);
+            eb.addField("Remaining Chatpoints", "Needed to level up: " + (1) + " points", false);
             eb.setAuthor(e.getGuild().getName(), null, e.getGuild().getIconUrl());
             eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
             eb.setColor(0x00ff00);

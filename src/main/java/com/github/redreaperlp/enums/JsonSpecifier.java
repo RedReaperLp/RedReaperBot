@@ -2,11 +2,14 @@ package com.github.redreaperlp.enums;
 
 import org.json.JSONObject;
 
-public enum UserObject {
+public enum JsonSpecifier {
     STATS(CommandEn.STATS.key()),
-    STATS_LEVEL("level"),
-    STATS_CHATPOINT(CommandEn.CHATPOINTS.key()),
-    NAME("name");
+    STATS_CHATPOINTS_LEVEL("level"),
+    STATS_CHATPOINT_POINTS(CommandEn.CHATPOINTS.key()),
+    NAME("name"),
+
+    SERVERS("servers"),
+    USERS("users");
 
 
 
@@ -15,7 +18,7 @@ public enum UserObject {
     private JSONObject value;
     private String uName;
 
-    UserObject(String key) {
+    JsonSpecifier(String key) {
         this.key = key;
     }
 
@@ -35,7 +38,7 @@ public enum UserObject {
         return value;
     }
 
-    public UserObject value(JSONObject value) {
+    public JsonSpecifier value(JSONObject value) {
         this.value = value;
         return this;
     }

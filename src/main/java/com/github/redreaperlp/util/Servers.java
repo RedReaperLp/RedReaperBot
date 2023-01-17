@@ -1,7 +1,7 @@
 package com.github.redreaperlp.util;
 
 import com.github.redreaperlp.Main;
-import com.github.redreaperlp.enums.UserObject;
+import com.github.redreaperlp.enums.JsonSpecifier;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import org.json.JSONException;
@@ -12,20 +12,47 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static com.github.redreaperlp.enums.UserObject.*;
+import static com.github.redreaperlp.enums.JsonSpecifier.*;
 
 public class Servers {
     File file = new File(Main.conf.getConfig("storage"));
 
-    JSONObject serversObj = new JSONObject();
+    String GREEN = "\u001B[32m";
+    String RED = "\u001B[31m";
+    String YELLOW = "\u001B[33m";
+    String RESET = "\u001B[0m";
+    JSONObject storageObj = new JSONObject();
+    JSONObject serverObj;
     boolean changes = false;
 
     public Servers() {
         if (!file.exists()) {
             try {
                 file.createNewFile();
+                serverObj = storageObj.put(SERVERS.key(), new JSONObject());
+                changes = true;
+                finalizer();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            resolver();
+            System.out.println("HI");
+            try {
+                serverObj = storageObj.getJSONObject(SERVERS.key());
+                System.out.println(serverObj);
+                return;
+            } catch (JSONException e) {
+                System.out.println(YELLOW + "Error while getting server object, creating...\n" + e.getMessage() + RESET);
+            }
+            if (serverObj == null) {
+                try {
+                    serverObj = storageObj.put(SERVERS.key(), new JSONObject());
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -34,8 +61,9 @@ public class Servers {
     public void finalizer() {
         try {
             if (changes) {
+                storageObj.put(SERVERS.key(), serverObj);
                 BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                writer.write(serversObj.toString(4));
+                writer.write(storageObj.toString(4));
                 writer.flush();
                 writer.close();
                 changes = false;
@@ -51,7 +79,7 @@ public class Servers {
     /**
      * Resolves the StorageFile and returns it to the local variable #servers
      *
-     * @see #serversObj
+     * @see #storageObj
      */
     public void resolver() {
         if (!file.exists()) {
@@ -70,9 +98,9 @@ public class Servers {
                 lines += line;
             }
             if (lines.equals("")) {
-                serversObj = new JSONObject();
+                storageObj = new JSONObject();
             } else {
-                serversObj = new JSONObject(lines);
+                storageObj = new JSONObject(lines);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -85,7 +113,7 @@ public class Servers {
 
     public List<Integer> getServerIDs() {
         List<Integer> ids = new ArrayList<>();
-        Iterator<String> keys = serversObj.keys();
+        Iterator<String> keys = storageObj.keys();
         while (keys.hasNext()) {
             ids.add(Integer.parseInt(keys.next()));
         }
@@ -100,10 +128,11 @@ public class Servers {
      */
     public void addServer(Guild guild) {
         try {
-            if (!serversObj.has(guild.getId())) {
-                serversObj.put(guild.getId(), new JSONObject());
+            if (!serverObj.getJSONObject(SERVERS.key()).has(guild.getId())) {
+                serverObj.getJSONObject(SERVERS.key()).put(guild.getId(), new JSONObject().put(USERS.key(), new JSONObject()));
                 changes = true;
             }
+            System.out.println(serverObj.toString(4));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -111,30 +140,34 @@ public class Servers {
 
     public JSONObject getServer(Guild guild) {
         try {
-            return serversObj.getJSONObject(guild.getId());
+            return serverObj.getJSONObject(SERVERS.key()).getJSONObject(guild.getId());
         } catch (JSONException e) {
             return new JSONObject();
         }
     }
 
-    public void removeServer(int id) {
-        serversObj.remove(String.valueOf(id));
-        changes = true;
+    public void removeServer(String id) {
+        try {
+            serverObj.getJSONObject(SERVERS.key()).remove(id);
+            changes = true;
+        } catch (JSONException e) {
+            System.out.println("Error while removing Server: " + id);
+        }
     }
 
     public void addUser(Guild server, User user) {
         try {
-            if (!serversObj.has(server.getId())) {
+            if (!serverObj.has(server.getId())) {
                 addServer(server);
             }
 
-            JSONObject serverObject = serversObj.getJSONObject(server.getId());
-            if (!serverObject.has(user.getId())) {
-                serverObject.put(user.getId(), new JSONObject()
-                                .put(UserObject.NAME.key(), user.getName())
-                                .put(STATS.key(), new JSONObject()
-                                        .put(STATS_CHATPOINT.key(), 0)
-                                        .put(STATS_LEVEL.key(), 0)));
+            JSONObject userObj = getUsers(server);
+            if (userObj == null) {
+                 getUsers(server).put(user.getId(), new JSONObject()
+                        .put(JsonSpecifier.NAME.key(), user.getName())
+                        .put(STATS.key(), new JSONObject()
+                                .put(STATS_CHATPOINT_POINTS.key(), 0)
+                                .put(STATS_CHATPOINTS_LEVEL.key(), 0)));
                 changes = true;
             }
         } catch (JSONException e) {
@@ -144,70 +177,51 @@ public class Servers {
 
     public void removeUser(User user, Guild guild) {
         try {
-            serversObj.getJSONObject(guild.getId()).remove(user.getId());
+            serverObj.getJSONObject(guild.getId()).remove(user.getId());
             changes = true;
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean containsUser(User user, Guild server, UserObject object) {
+    public boolean containsUser(User user, Guild server, JsonSpecifier object) {
         try {
             switch (object) {
                 case STATS -> {
-                    return serversObj.getJSONObject(server.getId()).getJSONObject(user.getId()).getJSONObject("stats") != null;
+                    return getUser(user, server).getJSONObject(STATS.key()) != null;
                 }
                 case NAME -> {
-                    return serversObj.getJSONObject(server.getId()).getJSONObject(user.getId()).getString("name") != null;
+                    return getUser(user, server).getString(NAME.key()) != null;
+                }
+                case STATS_CHATPOINT_POINTS -> {
+                    return getUser(user, server).getJSONObject(STATS.key()).getInt(STATS_CHATPOINT_POINTS.key()) != 0;
+                }
+                case STATS_CHATPOINTS_LEVEL -> {
+                    return getUser(user, server).getJSONObject(STATS.key()).getInt(STATS_CHATPOINTS_LEVEL.key()) != 0;
+                }
+                default -> {
+                    return false;
                 }
             }
         } catch (JSONException e) {
             return false;
         }
-        return false;
     }
 
-    public JSONObject getUser(User user, Guild server) {
+    public JSONObject getUsers(Guild server) {
         try {
-            return serversObj.getJSONObject(server.getId()).getJSONObject(user.getId());
+            return getServer(server).getJSONObject(USERS.key());
         } catch (JSONException e) {
             return null;
         }
     }
 
-    public void setUser(Guild server, User user, UserObject key) {
+    public JSONObject getUser(User user, Guild server) {
         try {
-            JSONObject serverObj = serversObj.getJSONObject(server.getId());
-            switch (key) {
-                case STATS -> {
-                    serverObj.put(STATS.key(), new JSONObject().put("chatpoints", 0));
-                }
-                case NAME -> {
-                    serverObj.getJSONObject(user.getId()).put(NAME.key(), user.getName());
-                }
-                case STATS_CHATPOINT -> {
-                    int chatpoints = serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key()).getInt(STATS_CHATPOINT.key());
-                    serverObj.getJSONObject(user.getId()).getJSONObject(STATS.key())
-                            .put(STATS_CHATPOINT.key(), chatpoints + 1)
-                            .put(STATS_LEVEL.key(), calcExp(chatpoints + 1));
-
-                }
-            }
-            changes = true;
+            return getUsers(server).getJSONObject(user.getId());
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+            return null;
         }
-    }
-
-    public int[] calcExp(int chatpoints) {
-        int level = 0;
-        int pointCost = 10;
-        while (chatpoints > pointCost) {
-            level++;
-            pointCost += level * 1.3;
-            chatpoints -= pointCost;
-        }
-        return new int[]{level == 0 ? 1 : level, chatpoints};
     }
 }
 

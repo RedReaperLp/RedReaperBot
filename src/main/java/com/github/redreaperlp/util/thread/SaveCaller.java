@@ -5,8 +5,8 @@ import com.github.redreaperlp.Main;
 public class SaveCaller implements Runnable{
     @Override
     public void run() {
-        Main.conf.saveConfig();
-        System.out.println("Saved config");
+        Main.servers.finalizer();
+        System.out.println("Saved changes to storage.json");
         System.exit(0);
     }
 }

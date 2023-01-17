@@ -7,6 +7,7 @@ import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.Servers;
+import com.github.redreaperlp.util.Stats.ChatPoints;
 import com.github.redreaperlp.util.thread.FinalizerThread;
 import com.github.redreaperlp.util.thread.SaveCaller;
 import net.dv8tion.jda.api.JDA;
@@ -17,6 +18,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,7 @@ import java.util.logging.LogManager;
 public class Main {
 
     public static Servers servers;
+    public static ChatPoints chatPoints;
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
@@ -35,10 +39,10 @@ public class Main {
     public static Config conf;
 
     public static void main(String[] args) throws InterruptedException {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.addShutdownHook(new Thread(new SaveCaller()));
         conf = new Config();
         servers = new Servers();
+        Runtime runtime = Runtime.getRuntime();
+        runtime.addShutdownHook(new Thread(new SaveCaller()));
         Main main = new Main();
         main.start();
     }
@@ -46,7 +50,6 @@ public class Main {
     public void start() throws InterruptedException {
         System.out.println(GREEN + "*** Starting Bot ***" + RESET);
         System.out.println(GREEN + "*** Version:" + YELLOW + " 1.0.0 " + GREEN + "***" + RESET);
-        conf.saveConfig();
 
         JDABuilder build = JDABuilder.createDefault(conf.getConfig(ConfEnum.TOKEN.key()));
         build.setActivity(Activity.playing(conf.getConfig(ConfEnum.PLAYING.key())));

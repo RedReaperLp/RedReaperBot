@@ -30,6 +30,7 @@ public class Config {
             }
             scanner.close();
             checkContaining();
+            saveConfig();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
