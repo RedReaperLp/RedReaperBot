@@ -18,14 +18,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.LogManager;
 
 public class Main {
 
@@ -38,19 +33,20 @@ public class Main {
 
     public static Config conf;
 
+
     public static void main(String[] args) throws InterruptedException {
+        Main main = new Main();
+        System.out.println(main.YELLOW + "*** Starting Bot ***" + main.RESET);
+        System.out.println(main.YELLOW + "*** Version:" + main.GREEN + " 1.0.0 " + main.YELLOW + "***" + main.RESET);
         conf = new Config();
         servers = new Servers();
+        chatPoints = new ChatPoints();
         Runtime runtime = Runtime.getRuntime();
         runtime.addShutdownHook(new Thread(new SaveCaller()));
-        Main main = new Main();
         main.start();
     }
 
     public void start() throws InterruptedException {
-        System.out.println(GREEN + "*** Starting Bot ***" + RESET);
-        System.out.println(GREEN + "*** Version:" + YELLOW + " 1.0.0 " + GREEN + "***" + RESET);
-
         JDABuilder build = JDABuilder.createDefault(conf.getConfig(ConfEnum.TOKEN.key()));
         build.setActivity(Activity.playing(conf.getConfig(ConfEnum.PLAYING.key())));
         build.setStatus(OnlineStatus.ONLINE);
@@ -60,14 +56,15 @@ public class Main {
         enableIntents(build);
         JDA jda = null;
         int tryCount = 0;
-        System.out.println(GREEN + "*** Connecting to Discord ***" + RESET);
+        System.out.println(YELLOW + "*** Connecting to Discord ***" + RESET);
         while (jda == null) {
             try {
                 jda = build.build();
+                System.out.println(GREEN + "*** Connected to Discord ***" + RESET);
             } catch (Exception e) {
                 if (e.getMessage().contains("UnknownHostException")) {
                     if (tryCount == 5) {
-                        System.out.println("Could not connect to Discord. Please check your internet connection.");
+                        System.out.println(YELLOW + "Could not connect to Discord. Please check your internet connection." + RESET);
                         System.exit(0);
                     }
                     System.out.println(RED + "Make sure, you have a wifi Connection, retry in 5 Seconds" + RESET);
@@ -86,9 +83,8 @@ public class Main {
         System.out.println(GREEN + "*** Bot is ready! ***" + RESET);
 
         List<Guild> currentServers = jda.getGuilds();
-        servers.resolver();
         for (Guild g : currentServers) {
-            servers.addServer(g);
+            servers.addGuild(g);
             g.updateCommands().addCommands(
                     prepareCommand(CommandEn.BAN),
                     Commands.slash("register", "Register yourself to the server"),
