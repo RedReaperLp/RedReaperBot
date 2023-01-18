@@ -1,4 +1,4 @@
-package com.github.redreaperlp.util;
+package com.github.redreaperlp.util.storage.servers;
 
 import com.github.redreaperlp.Main;
 import com.github.redreaperlp.enums.JsonSpecifier;
@@ -15,14 +15,14 @@ import java.util.Iterator;
 import static com.github.redreaperlp.enums.JsonSpecifier.*;
 
 public class Servers {
-    File file = new File(Main.conf.getConfig(STORAGE.key()));
+    public static File file = new File(Main.conf.getConfig(STORAGE.key()));
 
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
     String RESET = "\u001B[0m";
-    public JSONObject storageObj = new JSONObject();
-    boolean changes = false;
+    public static JSONObject storageObj = new JSONObject();
+    public static boolean changes = false;
 
     public Servers() {
         if (!file.exists()) {

@@ -1,19 +1,14 @@
 package com.github.redreaperlp.util.thread;
 
-import com.github.redreaperlp.util.Servers;
+import com.github.redreaperlp.util.storage.servers.Servers;
 
 import java.util.concurrent.TimeUnit;
 
-public class FinalizerThread implements Runnable{
-    private Servers object;
-
-    public FinalizerThread(Servers object) {
-        this.object = object;
-    }
+public class FinalizerThread extends Servers implements Runnable{
     @Override
     public void run() {
         while (true) {
-            object.finalizer();
+            finalizer();
             try {
                 TimeUnit.MINUTES.sleep(1);
             } catch (InterruptedException e) {

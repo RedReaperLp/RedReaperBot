@@ -6,8 +6,8 @@ import com.github.redreaperlp.enums.ConfEnum;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
-import com.github.redreaperlp.util.Servers;
-import com.github.redreaperlp.util.Stats.ChatPoints;
+import com.github.redreaperlp.util.storage.servers.Servers;
+import com.github.redreaperlp.util.storage.servers.stats.util.ChatPoints;
 import com.github.redreaperlp.util.thread.FinalizerThread;
 import com.github.redreaperlp.util.thread.SaveCaller;
 import net.dv8tion.jda.api.JDA;
@@ -93,7 +93,7 @@ public class Main {
                     prepareCommand(CommandEn.CLEAR)
             ).queue();
         }
-        new Thread(new FinalizerThread(servers)).start();
+        new Thread(new FinalizerThread()).start();
     }
 
     public void enableIntents(JDABuilder build) {
