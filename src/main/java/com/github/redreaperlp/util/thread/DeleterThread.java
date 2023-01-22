@@ -1,10 +1,12 @@
 package com.github.redreaperlp.util.thread;
 
+import com.github.redreaperlp.Main;
 import com.github.redreaperlp.enums.CommandEn;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -81,17 +83,27 @@ public class DeleterThread implements Runnable {
 
                         e.getHook().sendMessageEmbeds(new EmbedBuilder().setTitle("There were no messages to Clear").setColor(0xff0000).build()).complete();
                     } else {
-
                         runningIds.add(e.getChannel().getId());
-                        e.getChannel().purgeMessages(messagesToDel);
+                       List<CompletableFuture<Void>> f = e.getChannel().purgeMessages(messagesToDel);
+                        for (CompletableFuture<Void> future : f) {
+                            future.join();
+                        }
                         e.getHook().sendMessageEmbeds(new EmbedBuilder().setTitle("Cleared " + cleared + " messages!").setColor(0x00ff00).build()).complete();
                     }
                 }
-                e.getChannel().getHistory().retrievePast(1).queue(messages -> {
+                e.getChannel().getHistory().retrievePast(10).queue(messages -> {
                     if (messages.size() > 0) {
-                        ids.add(messages.get(0).getId());
+                        int index = 0;
+                        for (int i = 0; i < messages.size(); i++) {
+                            if (messages.get(i).getId().equals(e.getCommandId())) {
+                                index = i;
+                            }
+                        }
+                        ids.add(messages.get(index).getId());
+                        messages.get(index).addReaction(Emoji.fromFormatted("✅")).queue();
+                        int finalIndex = index;
                         CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS).execute(() -> {
-                            messages.get(0).delete().queue();
+                            messages.get(finalIndex).delete().queue();
                             ids.remove(messages.get(0).getId());
                             runningIds.remove(e.getChannel().getId());
                         });

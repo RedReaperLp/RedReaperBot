@@ -32,3 +32,7 @@ tasks {
 application {
     mainClass.set("com.github.redreaperlp.Main")
 }
+
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
