@@ -3,6 +3,7 @@ package com.github.redreaperlp.json.storage.messages;
 import com.github.redreaperlp.RedReaperBot;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import org.json.JSONException;
 
@@ -27,11 +28,12 @@ public class JMessageAssociation {
         }
     }
 
-    public void removeAssociation(Guild guild, Message message) {
+    public boolean removeAssociation(Guild guild, Message message) {
         try {
             RedReaperBot.servers.getGuild(guild).getJSONObject(MESSAGE_ASSOCIATION.key()).remove(message.getId());
+            return true;
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+            return false;
         }
     }
 }
