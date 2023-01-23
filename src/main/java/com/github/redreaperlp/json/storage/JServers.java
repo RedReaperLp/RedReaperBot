@@ -1,11 +1,8 @@
 package com.github.redreaperlp.json.storage;
 
 import com.github.redreaperlp.RedReaperBot;
-import com.github.redreaperlp.json.storage.channel.JChannelConfigurations;
-import com.github.redreaperlp.json.storage.messages.JMessageAssociation;
 import com.github.redreaperlp.json.storage.user.JUser;
 import com.github.redreaperlp.json.storage.user.stats.JStats;
-import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
 import com.github.redreaperlp.util.JsonHelper;
 import net.dv8tion.jda.api.entities.Guild;
 import org.json.JSONException;
@@ -23,15 +20,13 @@ public class JServers {
     public static File file = new File(RedReaperBot.conf.getConfig(STORAGE.key()));
 
     public JSONObject storageObj = new JSONObject();
-    private JChannelConfigurations channelConfigurations = new JChannelConfigurations();
-    private JMessageAssociation messageAssociation = new JMessageAssociation();
+
     private JUser user = new JUser();
 
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
     String RESET = "\u001B[0m";
-    public boolean changes = false;
 
     public JServers() {
         if (!file.exists()) {
@@ -44,7 +39,6 @@ public class JServers {
             }
         } else {
             storageObj = JsonHelper.resolver(file);
-            System.out.println(storageObj.toString());
         }
     }
 
@@ -65,27 +59,13 @@ public class JServers {
      */
     public void addGuild(Guild guild) {
         try {
-            if (!storageObj.has(STORAGE.key())) {
-                storageObj.put(STORAGE.key(), new JSONObject());
-            }
-            if (!storageObj.getJSONObject(STORAGE.key()).has(GUILD.key())) {
-                storageObj.getJSONObject(STORAGE.key()).put(GUILD.key(), new JSONObject());
-            }
-            JSONObject guildObj;
+            checkContain();
             if (!storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).has(guild.getId())) {
-                guildObj = storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guild.getId(), new JSONObject()
+                storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guild.getId(), new JSONObject()
                         .put(USERS.key(), new JSONObject()));
-                changes = true;
+                changes();
             } else {
-                guildObj = storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).getJSONObject(guild.getId());
-            }
-            if (!guildObj.has(CHANNEL_CONFIG.key())) {
-                guildObj.put(CHANNEL_CONFIG.key(), new JSONObject());
-                changes();
-            }
-            if (!guildObj.has(MESSAGE_ASSOCIATION.key())) {
-                guildObj.put(MESSAGE_ASSOCIATION.key(), new JSONObject());
-                changes();
+                storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).getJSONObject(guild.getId());
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -97,16 +77,20 @@ public class JServers {
         try {
             return storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).getJSONObject(guild.getId());
         } catch (JSONException e) {
-            return new JSONObject();
+            try {
+                return storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guild.getId(), new JSONObject());
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void removeGuild(String id) {
         try {
             storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).remove(id);
-            changes = true;
+            changes();
         } catch (JSONException e) {
-            System.out.println("Error while removing Server: " + id);
+
         }
     }
 
@@ -138,20 +122,9 @@ public class JServers {
         return user().stats();
     }
 
-    public JChatPoints chatPoints() {
-        return stats().chatPoints();
-    }
 
     public void changes() {
         JsonHelper.serversChange();
-    }
-
-    public JChannelConfigurations channelConfigurations() {
-        return channelConfigurations;
-    }
-
-    public JMessageAssociation messageAssociation() {
-        return messageAssociation;
     }
 }
 

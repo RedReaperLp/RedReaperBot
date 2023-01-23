@@ -10,7 +10,6 @@ public class OnUserJoin extends ListenerAdapter {
 
     public void onGuildMemberJoin(GuildMemberJoinEvent e) {
         User user = e.getUser();
-        System.out.println("User joined: " + user.getName());
         MessageChannel channel = user.openPrivateChannel().complete();
         EmbedBuilder eb = new EmbedBuilder();
         eb.setAuthor(e.getUser().getName(), null, e.getUser().getEffectiveAvatarUrl());

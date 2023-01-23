@@ -17,7 +17,7 @@ public enum JsonSpecifier {
     CHANNEL_CONFIG("channelConfig"),
 
     MESSAGE_ASSOCIATION("messageAssociation"),
-
+    BAD_MESSAGES("badMessages"),
 
 
 

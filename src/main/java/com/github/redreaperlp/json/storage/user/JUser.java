@@ -52,7 +52,7 @@ public class JUser {
         try {
             JSONObject usr = servers.getGuild(guild).getJSONObject(USERS.key());
             if (usr == null) {
-                servers.changes = true;
+                servers.changes();
                 return servers.getGuild(guild).put(USERS.key(), new JSONObject());
             }
             return usr;

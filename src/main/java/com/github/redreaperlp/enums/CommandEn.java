@@ -59,16 +59,22 @@ public enum CommandEn {
      * - - - Index: {@link #optionName(int) CommandEn.CLEAR.optionName(2);} <br>
      */
     BAN("ban", "Bans a mentioned User with an Reason",
-            new CommandOptions("user", "The user, who should be banned", true, OptionType.USER), //Index 0
+            new CommandOptions(IDEnum.USER.key(), "The user, who should be banned", true, OptionType.USER), //Index 0
             new CommandOptions("reason", "The reason why the user is banned", true, OptionType.STRING), //Index 1
             new CommandOptions("days", "The amount of days the Messages from this User will be deleted", false, OptionType.INTEGER)), //Index 2
     /**
      * ROLES <br>
      * Key: roles
      */
-    ROLES("roles","Creates a message where a Role selection Message can be requested"),
+    ROLES(IDEnum.ROLES.key(), "Creates a message where a Role selection Message can be requested"),
     BAD_WORDS_CHANNEL("bad-words-channel", "Here you can choose the Channel, where you get notified if someone uses blacklisted words",
-            new CommandOptions("channel", "The channel where you get notified", false, OptionType.CHANNEL)),;
+            new CommandOptions(IDEnum.CHANNEL.key(), "The channel where you get notified", false, OptionType.CHANNEL)),
+    ADD_BAD_WORD("add-bad-word", "Add words to Blacklist to get Notified",
+            new CommandOptions(IDEnum.WORD.key(), "The word you want to add to the Blacklist", true, OptionType.STRING)),
+    REMOVE_BAD_WORD("remove-bad-word", "remove words from Blacklist to get Notified",
+                         new CommandOptions(IDEnum.WORD.key(), "The word you want to remove from the Blacklist", true, OptionType.STRING))
+
+    ;
 
     private String key;
     private String description;

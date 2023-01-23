@@ -17,7 +17,6 @@ public class JStats {
         try {
             return RedReaperBot.servers.user().getUser(user, guild).getJSONObject(user.getId()).getJSONObject("stats");
         } catch (JSONException e) {
-            System.out.println("Error while getting stats for user " + user.getName() + "\n\n" + e.getMessage());
         }
         return null;
     }
@@ -25,9 +24,8 @@ public class JStats {
     public void updateStats(JSONObject stats, int amount) {
         try {
             stats.put(STATS_CHATPOINTS_POINTS.key(), amount);
-            stats.put(STATS_CHATPOINTS_LEVEL.key(), RedReaperBot.servers.chatPoints().calcExp(amount)[0]);
+            stats.put(STATS_CHATPOINTS_LEVEL.key(), RedReaperBot.chatPoints.calcExp(amount)[0]);
         } catch (JSONException e) {
-            System.out.println("Error while updating stats for an user");
         }
     }
 

@@ -11,7 +11,7 @@ public class FinalizerThread implements Runnable{
             RedReaperBot.servers.finalizer();
             RedReaperBot.usersettings.finalizer();
             try {
-                TimeUnit.MINUTES.sleep(1);
+                TimeUnit.SECONDS.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

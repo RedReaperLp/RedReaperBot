@@ -29,8 +29,11 @@ public class JChannelConfigurations {
         try {
             return servers.getGuild(guild).getJSONObject(JsonSpecifier.CHANNEL_CONFIG.key());
         } catch (JSONException e) {
-            System.out.println("ChannelConfigurations not found, creating new one...");
-            return new JSONObject();
+            try {
+                return servers.getGuild(guild).put(JsonSpecifier.CHANNEL_CONFIG.key(), new JSONObject());
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }

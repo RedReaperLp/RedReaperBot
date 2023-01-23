@@ -27,7 +27,6 @@ public class JChatPoints {
                 servers.changes();
                 return calcExp(current)[0] != calcExp(current - amount)[0];
             } catch (JSONException e) {
-                System.out.println("Error while incrementing chatpoints for user " + user.getName());
                 e.printStackTrace();
                 return false;
             }
@@ -47,7 +46,6 @@ public class JChatPoints {
                 servers.stats().updateStats(stats, current);
                 servers.changes();
             } catch (JSONException e) {
-                System.out.println("Error while decrementing chatpoints for user " + user.getName());
             }
         }
     }

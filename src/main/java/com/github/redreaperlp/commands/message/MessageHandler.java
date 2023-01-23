@@ -1,22 +1,18 @@
 package com.github.redreaperlp.commands.message;
 
 import com.github.redreaperlp.RedReaperBot;
+import com.github.redreaperlp.enums.IDEnum;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 public class MessageHandler implements Runnable {
-    List<String> badThings = Stream.of("https://", "http").toList();
     MessageReceivedEvent e;
     MessageHandleEnum actionEnum;
     Guild guild;
@@ -31,21 +27,22 @@ public class MessageHandler implements Runnable {
 
     @Override
     public void run() {
+        if (e.getAuthor().isBot()) return;
         switch (actionEnum) {
             case INCREMENT_CHATPOINTS -> {
-                boolean leveledUp = RedReaperBot.servers.chatPoints().increment(guild, user);
+                boolean leveledUp = RedReaperBot.chatPoints.increment(guild, user);
                 if (leveledUp) {
                     e.getAuthor().openPrivateChannel().queue(channel -> channel.sendMessage("You leveled up!").queue());
                 }
             }
             case CKECK_FOR_LINKS -> {
-                if (e.getAuthor().isBot()) return;
-                for (String badThing : badThings) {
+                for (String badThing : RedReaperBot.badMessages.getBadMessages(guild)) {
+                    if (badThing.equals("")) return;
                     if (e.getMessage().getContentRaw().contains(badThing)) {
                         TextChannel channel = null;
                         PrivateChannel channelPr = null;
                         try {
-                            channel = RedReaperBot.jda.getTextChannelById(RedReaperBot.servers.channelConfigurations().getChannelConfigurations(guild, ChannelConfigEn.BAD_WORDS_ASK));
+                            channel = RedReaperBot.jda.getTextChannelById(RedReaperBot.channelConfigurations.getChannelConfigurations(guild, ChannelConfigEn.BAD_WORDS_ASK));
                         } catch (Exception ex) {
                             User user = e.getGuild().getOwner().getUser();
                             channelPr = user.openPrivateChannel().complete();
@@ -53,24 +50,24 @@ public class MessageHandler implements Runnable {
 
                         EmbedBuilder embed = new EmbedBuilder()
                                 .setTitle(":bangbang: | Bad Word")
-                                .addField("User", e.getAuthor().getAsMention(), true)
-                                .addField("Channel", e.getChannel().getAsMention(), true)
-                                .addField("Message", e.getMessage().getContentRaw(), false)
+                                .addField(IDEnum.USER.key(), e.getAuthor().getAsMention(), true)
+                                .addField(IDEnum.CHANNEL.key(), e.getChannel().getAsMention(), true)
+                                .addField(IDEnum.MESSAGE.key(), e.getMessage().getContentRaw(), false)
                                 .setColor(0xff0000)
                                 .setFooter("ID: " + e.getAuthor().getId())
                                 .setThumbnail(e.getAuthor().getAvatarUrl());
 
-                        Button keep = Button.success("keepBad", "Keep");
-                        Button delete = Button.danger("deleteBad", "Delete");
+                        Button keep = Button.success(IDEnum.KEEP_BADWORD.key(), "Keep");
+                        Button delete = Button.danger(IDEnum.DELETE_BADWORD.key(), "Delete");
+                        Button ban = Button.danger(IDEnum.BAN_BADWORD.key(), "Ban");
 
-                        Button ban = Button.danger("ban", "Ban");
                         if (channel != null) {
-                            Message msg = channel.sendMessageEmbeds(embed.build()).setActionRow(keep, delete).complete();
-                            RedReaperBot.servers.messageAssociation().addAssociation(guild, msg, e.getMessage(), e.getChannel());
+                            Message msg = channel.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
+                            RedReaperBot.messageAssociation.addAssociation(guild, msg, e.getMessage(), e.getChannel());
                         } else if (channelPr != null) {
                             embed.addField("Server", e.getGuild().getId() + " | " + e.getGuild().getName(), false);
                             Message msg = channelPr.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
-                            RedReaperBot.servers.messageAssociation().addAssociation(guild, msg, e.getMessage(), e.getChannel());
+                            RedReaperBot.messageAssociation.addAssociation(guild, msg, e.getMessage(), e.getChannel());
                         }
                         return;
                     }

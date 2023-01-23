@@ -7,6 +7,9 @@ import com.github.redreaperlp.enums.JsonSpecifier;
 import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.json.settings.JUserSettings;
 import com.github.redreaperlp.json.storage.JServers;
+import com.github.redreaperlp.json.storage.channel.JChannelConfigurations;
+import com.github.redreaperlp.json.storage.messages.JBadMessages;
+import com.github.redreaperlp.json.storage.messages.JMessageAssociation;
 import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
@@ -31,6 +34,10 @@ public class RedReaperBot {
     public static JServers servers;
     public static JChatPoints chatPoints;
     public static JUserSettings usersettings;
+    public static JChannelConfigurations channelConfigurations = new JChannelConfigurations();
+    public static JMessageAssociation messageAssociation = new JMessageAssociation();
+    public static JBadMessages badMessages = new JBadMessages();
+
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
@@ -91,12 +98,14 @@ public class RedReaperBot {
         List<Guild> currentServers = jda.getGuilds();
         for (Guild g : currentServers) {
             servers.addGuild(g);
-
+            messageAssociation.checkValidity(g);
             g.updateCommands().addCommands(
                     prepareCommand(CommandEn.BAN),
                     prepareCommand(CommandEn.CHATPOINTS),
                     prepareCommand(CommandEn.CLEAR),
-                    prepareCommand(CommandEn.BAD_WORDS_CHANNEL)
+                    prepareCommand(CommandEn.BAD_WORDS_CHANNEL),
+                    prepareCommand(CommandEn.ADD_BAD_WORD),
+                    prepareCommand(CommandEn.REMOVE_BAD_WORD)
             ).queue();
         }
         new Thread(new FinalizerThread()).start();

@@ -1,9 +1,11 @@
 package com.github.redreaperlp.commands;
 
 import com.github.redreaperlp.RedReaperBot;
+import com.github.redreaperlp.commands.handlers.ChatPoints;
 import com.github.redreaperlp.commands.message.MessageHandleEnum;
 import com.github.redreaperlp.commands.message.MessageHandler;
 import com.github.redreaperlp.enums.CommandEn;
+import com.github.redreaperlp.enums.IDEnum;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -14,21 +16,15 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
-import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
-
-import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_LEVEL;
-import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_POINTS;
 
 public class EventHandler extends ListenerAdapter {
     String RED = "\u001B[31m";
@@ -42,19 +38,19 @@ public class EventHandler extends ListenerAdapter {
             if (e.getName().equals(CommandEn.BAN.key())) {
                 e.getChannel().sendMessage("This command is not yet implemented!").queue();
             } else if (e.getName().equals(CommandEn.CHATPOINTS.key())) {
-                chatpoints(e);
+                new ChatPoints(e);
             } else if (e.getName().equals(CommandEn.CLEAR.key())) {
                 e.deferReply().queue();
                 new Thread(new DeleterThread(e)).run();
             } else if (e.getName().equals(CommandEn.BAD_WORDS_CHANNEL.key())) {
-                OptionMapping mapping = e.getOption("channel");
+                OptionMapping mapping = e.getOption(IDEnum.CHANNEL.key());
                 String channel = null;
                 if (mapping != null) {
                     channel = mapping.getAsChannel().getId();
                 } else {
                     channel = e.getChannel().getId();
                 }
-                RedReaperBot.servers.channelConfigurations().setChannelConfigurations(e.getGuild(), ChannelConfigEn.BAD_WORDS_ASK, channel);
+                RedReaperBot.channelConfigurations.setChannelConfigurations(e.getGuild(), ChannelConfigEn.BAD_WORDS_ASK, channel);
                 RedReaperBot.servers.changes();
                 e.replyEmbeds(
                         new EmbedBuilder()
@@ -62,6 +58,10 @@ public class EventHandler extends ListenerAdapter {
                                 .setDescription("The bad words channel has been set to " + RedReaperBot.jda.getTextChannelById(channel).getAsMention())
                                 .setColor(0xff00).build()
                 ).queue();
+            } else if (e.getName().equals(CommandEn.ADD_BAD_WORD.key())) {
+                RedReaperBot.badMessages.addBadMessage(e);
+            } else if (e.getName().equals(CommandEn.REMOVE_BAD_WORD.key())) {
+                RedReaperBot.badMessages.removeBadMessage(e);
             }
         }
     }
@@ -70,37 +70,49 @@ public class EventHandler extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent e) {
         String id = e.getComponentId();
         Message space = e.getMessage();
-        switch (id) {
-            case "deleteBad" -> {
+        IDEnum idEnum = IDEnum.fromKey(id);
+        switch (idEnum) {
+            case DELETE_BADWORD -> {
                 Guild guild = guildByEmbed(e, space);
-                String[] association = RedReaperBot.servers.messageAssociation().getAssociation(guild, space);
+                String[] association = RedReaperBot.messageAssociation.getAssociation(guild, space);
                 if (association != null) {
                     RedReaperBot.servers.changes();
                     TextChannel tChannel = RedReaperBot.jda.getTextChannelById(association[1]);
                     VoiceChannel vChannel = RedReaperBot.jda.getVoiceChannelById(association[1]);
                     if (tChannel != null) {
-                        tChannel.retrieveMessageById(association[0]).queue(message -> message.delete().queue());
+                        try {
+                            tChannel.retrieveMessageById(association[0]).complete().delete().queue();
+                        } catch (Exception exception) {
+                            e.reply("The message was already deleted!").setEphemeral(true).queue();
+                            return;
+                        }
                     } else if (vChannel != null) {
-                        vChannel.retrieveMessageById(association[0]).queue(message -> message.delete().queue());
+                        try {
+                            tChannel.retrieveMessageById(association[0]).complete().delete().queue();
+                        } catch (Exception exception) {
+                            e.reply("The message was already deleted!").setEphemeral(true).queue();
+                            return;
+                        }
                     }
+                    RedReaperBot.messageAssociation.removeAssociation(guild, space);
                 } else {
-                    e.getHook().sendMessage("There was no association found for this message!").setEphemeral(true).queue();
+                    e.reply("There was no association found for this message!").setEphemeral(true).queue();
+                    return;
                 }
                 e.deferEdit().queue();
                 space.delete().queue();
             }
-            case "keepBad" -> {
+            case KEEP_BADWORD -> {
+                e.deferReply().queue();
                 Guild guild = guildByEmbed(e, space);
-                boolean foundAssociation = RedReaperBot.servers.messageAssociation().removeAssociation(guild, space);
+                space.delete().queue();
+                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(guild, space);
                 if (!foundAssociation) {
                     e.getHook().sendMessage("There was no association found for this message!").queue();
-                    System.out.println(RED + "There was no association found for this message!" + RESET);
                 } else {
                     e.getHook().sendMessage("The association has been removed!").queue();
-                    System.out.println(GREEN + "The association has been removed!" + RESET);
                     RedReaperBot.servers.changes();
                 }
-                space.delete().queue();
             }
         }
     }
@@ -139,46 +151,16 @@ public class EventHandler extends ListenerAdapter {
             new Thread(new MessageHandler(e, MessageHandleEnum.CKECK_FOR_LINKS)).run();
             new Thread(new MessageHandler(e, MessageHandleEnum.INCREMENT_CHATPOINTS)).run();
         } else {
-
+            if (e.getMessage().getContentRaw().equals("clear")) {
+                List<Message> toDelete = new ArrayList<>();
+                List<Message> messages = e.getChannel().asPrivateChannel().getHistory().retrievePast(100).complete();
+                for (Message message : messages) {
+                    if (message.getAuthor().equals(RedReaperBot.jda.getSelfUser())) {
+                        toDelete.add(message);
+                    }
+                }
+                e.getChannel().asPrivateChannel().purgeMessages(toDelete);
+            }
         }
     }
-
-    public void chatpoints(SlashCommandInteractionEvent e) {
-        try {
-            JSONObject stats = RedReaperBot.servers.stats().getStats(e.getUser(), e.getGuild());
-
-            int points = stats.getInt(STATS_CHATPOINTS_POINTS.key());
-            int level = stats.getInt(STATS_CHATPOINTS_LEVEL.key());
-            int[] pointStats = RedReaperBot.chatPoints.calcExp(points);
-            int remaining = pointStats[1];
-            if (points < 23) {
-                remaining = 23 - points;
-            }
-            if (points != 0) {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Overview");
-                eb.addField("Chatpoints", points + "", true);
-                eb.addField("Level", level + "", true);
-                eb.addField("Remaining Chatpoints", "Needed to level up: " + remaining + " points", false);
-                eb.setAuthor(e.getGuild().getName(), null, e.getGuild().getIconUrl());
-                eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
-                eb.setColor(0x00ff00);
-                e.replyEmbeds(eb.build()).queue();
-            } else {
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("Overview");
-                eb.addField("Chatpoints", "0", true);
-                eb.addField("Level", "1", true);
-                eb.addField("Remaining Chatpoints", "Needed to level up: 23 points", false);
-                eb.setAuthor(e.getGuild().getName(), null, e.getGuild().getIconUrl());
-                eb.setFooter("Requested by " + e.getUser().getName(), e.getUser().getAvatarUrl());
-                eb.setColor(0xff0000);
-                e.replyEmbeds(eb.build()).queue();
-            }
-        } catch (JSONException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-
 }
