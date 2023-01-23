@@ -82,7 +82,9 @@ public class Config {
                 "// If you want to change the settings, you have to restart the bot.\n" +
                 "\n" +
                 "// token: The token of the bot can be found on the discord developer page(https://discord.com/developers/applications).\n" +
-                "// playing: The status of the bot.\n"
+                "// playing: The status of the bot.\n" +
+                "// storage: The storage type of the bot. (json)\n" +
+                "// user_settings: The user settings type of the bot. (json)\n"
         );
     }
 
@@ -90,6 +92,7 @@ public class Config {
         this.contains(ConfEnum.TOKEN);
         this.contains(ConfEnum.PLAYING);
         this.contains(ConfEnum.STORAGE);
+        this.contains(ConfEnum.USER_SETTINGS);
     }
 
     public void contains(ConfEnum e) {

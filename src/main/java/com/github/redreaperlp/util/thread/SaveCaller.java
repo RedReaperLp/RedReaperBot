@@ -1,11 +1,11 @@
 package com.github.redreaperlp.util.thread;
 
-import com.github.redreaperlp.Main;
+import com.github.redreaperlp.RedReaperBot;
 
 public class SaveCaller implements Runnable{
     @Override
     public void run() {
-        Main.servers.finalizer();
+        RedReaperBot.servers.finalizer();
         System.exit(0);
     }
 }

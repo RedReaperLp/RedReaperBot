@@ -4,11 +4,14 @@ import com.github.redreaperlp.util.CommandOptions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 public enum CommandEn {
+
+
     /**
      * STATS <br>
      * - Key: stats <br>
      */
     STATS("stats", "Sends you a conclusion of Your Stats"),
+
 
     /**
      * CLEAR <br>
@@ -30,11 +33,15 @@ public enum CommandEn {
             new CommandOptions("amount", "Clears a specified amount of Messages in current channel", true, OptionType.INTEGER), //Index 0
             new CommandOptions("user", "Clear only the provided Users messages within the specified amount", false, OptionType.USER), //Index 1
             new CommandOptions("role", "Clear only the provided Roles messages within the specified amount", false, OptionType.ROLE)), //Index 2
+
+
     /**
      * CHATPOINTS <br>
      * Key: chatpoints <br>
      */
     CHATPOINTS("chatpoints", "Displays you your Chat experience and Level with the Amount missing to level Up"),
+
+
     /**
      * BAN <br>
      * Key: ban <br>
@@ -54,7 +61,14 @@ public enum CommandEn {
     BAN("ban", "Bans a mentioned User with an Reason",
             new CommandOptions("user", "The user, who should be banned", true, OptionType.USER), //Index 0
             new CommandOptions("reason", "The reason why the user is banned", true, OptionType.STRING), //Index 1
-            new CommandOptions("days", "The amount of days the Messages from this User will be deleted", false, OptionType.INTEGER)); //Index 2
+            new CommandOptions("days", "The amount of days the Messages from this User will be deleted", false, OptionType.INTEGER)), //Index 2
+    /**
+     * ROLES <br>
+     * Key: roles
+     */
+    ROLES("roles","Creates a message where a Role selection Message can be requested"),
+    BAD_WORDS_CHANNEL("bad-words-channel", "Here you can choose the Channel, where you get notified if someone uses blacklisted words",
+            new CommandOptions("channel", "The channel where you get notified", false, OptionType.CHANNEL)),;
 
     private String key;
     private String description;

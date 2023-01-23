@@ -23,14 +23,14 @@ tasks {
         archiveClassifier.set("")
         manifest {
             attributes(
-                    "Main-Class" to "com.github.redreaperlp.Main"
+                    "Main-Class" to "com.github.redreaperlp.RedReaperBot"
             )
         }
     }
 }
 
 application {
-    mainClass.set("com.github.redreaperlp.Main")
+    mainClass.set("com.github.redreaperlp.RedReaperBot")
 }
 
 tasks.withType<JavaCompile> {

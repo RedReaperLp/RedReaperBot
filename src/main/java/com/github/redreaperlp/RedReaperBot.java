@@ -3,11 +3,13 @@ package com.github.redreaperlp;
 import com.github.redreaperlp.commands.EventHandler;
 import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.ConfEnum;
+import com.github.redreaperlp.enums.JsonSpecifier;
 import com.github.redreaperlp.events.OnUserJoin;
+import com.github.redreaperlp.json.settings.JUserSettings;
+import com.github.redreaperlp.json.storage.JServers;
+import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
-import com.github.redreaperlp.util.storage.servers.Servers;
-import com.github.redreaperlp.util.storage.servers.stats.util.ChatPoints;
 import com.github.redreaperlp.util.thread.FinalizerThread;
 import com.github.redreaperlp.util.thread.SaveCaller;
 import net.dv8tion.jda.api.JDA;
@@ -18,14 +20,17 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Locale;
 
-public class Main {
+public class RedReaperBot {
 
-    public static Servers servers;
-    public static ChatPoints chatPoints;
+    public static JServers servers;
+    public static JChatPoints chatPoints;
+    public static JUserSettings usersettings;
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
     String YELLOW = "\u001B[33m";
@@ -35,17 +40,18 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        Main main = new Main();
+        RedReaperBot main = new RedReaperBot();
         System.out.println(main.YELLOW + "*** Starting Bot ***" + main.RESET);
         System.out.println(main.YELLOW + "*** Version:" + main.GREEN + " 1.0.0 " + main.YELLOW + "***" + main.RESET);
         conf = new Config();
-        servers = new Servers();
-        chatPoints = new ChatPoints();
+        servers = new JServers();
+        chatPoints = new JChatPoints();
+        usersettings = new JUserSettings();
         Runtime runtime = Runtime.getRuntime();
         runtime.addShutdownHook(new Thread(new SaveCaller()));
         main.start();
     }
-
+    public static JDA jda = null;
     public void start() throws InterruptedException {
         JDABuilder build = JDABuilder.createDefault(conf.getConfig(ConfEnum.TOKEN.key()));
         build.setActivity(Activity.playing(conf.getConfig(ConfEnum.PLAYING.key())));
@@ -54,7 +60,7 @@ public class Main {
         build.addEventListeners(new OnUserJoin());
         build.addEventListeners(new EventHandler());
         enableIntents(build);
-        JDA jda = null;
+
         int tryCount = 0;
         System.out.println(YELLOW + "*** Connecting to Discord ***" + RESET);
         while (jda == null) {
@@ -85,12 +91,12 @@ public class Main {
         List<Guild> currentServers = jda.getGuilds();
         for (Guild g : currentServers) {
             servers.addGuild(g);
+
             g.updateCommands().addCommands(
                     prepareCommand(CommandEn.BAN),
-                    Commands.slash("register", "Register yourself to the server"),
-                    Commands.user("register"),
                     prepareCommand(CommandEn.CHATPOINTS),
-                    prepareCommand(CommandEn.CLEAR)
+                    prepareCommand(CommandEn.CLEAR),
+                    prepareCommand(CommandEn.BAD_WORDS_CHANNEL)
             ).queue();
         }
         new Thread(new FinalizerThread()).start();
@@ -108,6 +114,21 @@ public class Main {
         build.enableIntents(GatewayIntent.SCHEDULED_EVENTS);
     }
 
+    public void prepareJsonSpecifier() {
+        try {
+            JsonSpecifier.STATS.defaultValue(
+                    new JSONObject()
+                            .put(JsonSpecifier.STATS_CHATPOINTS_POINTS.key(), 0)
+                            .put(JsonSpecifier.STATS_CHATPOINTS_LEVEL.key(), 0)
+            );
+            JsonSpecifier.GUILD.defaultValue(
+                    new JSONObject());
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public SlashCommandData prepareCommand(CommandEn c) {
         SlashCommandData command = Commands.slash(c.key(), c.description());
         CommandOptions[] ops = c.options();
@@ -115,7 +136,7 @@ public class Main {
             for (CommandOptions options : ops) {
                 command.addOption(options.type(), options.name(), options.description(), options.forced());
             }
-        }
+        };
         return command;
     }
 }

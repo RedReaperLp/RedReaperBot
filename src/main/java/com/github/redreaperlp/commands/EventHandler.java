@@ -1,21 +1,28 @@
 package com.github.redreaperlp.commands;
 
-import com.github.redreaperlp.Main;
+import com.github.redreaperlp.RedReaperBot;
+import com.github.redreaperlp.commands.message.MessageHandleEnum;
+import com.github.redreaperlp.commands.message.MessageHandler;
 import com.github.redreaperlp.enums.CommandEn;
+import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-
-import static com.github.redreaperlp.enums.JsonSpecifier.*;
+import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_LEVEL;
+import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_POINTS;
 
 public class EventHandler extends ListenerAdapter {
     String RED = "\u001B[31m";
@@ -32,23 +39,62 @@ public class EventHandler extends ListenerAdapter {
                 chatpoints(e);
             } else if (e.getName().equals(CommandEn.CLEAR.key())) {
                 e.deferReply().queue();
-                new DeleterThread(e).run();
+                new Thread(new DeleterThread(e)).run();
+            } else if (e.getName().equals(CommandEn.BAD_WORDS_CHANNEL.key())) {
+                OptionMapping mapping = e.getOption("channel");
+                String channel = null;
+                if (mapping != null) {
+                    channel = mapping.getAsChannel().getId();
+                } else {
+                    channel = e.getChannel().getId();
+                }
+                RedReaperBot.servers.channelConfigurations().setChannelConfigurations(e.getGuild(), ChannelConfigEn.BAD_WORDS_ASK, channel);
+                RedReaperBot.servers.changes();
+                e.replyEmbeds(
+                        new EmbedBuilder()
+                                .setTitle("Bad Words Channel")
+                                .setDescription("The bad words channel has been set to " + RedReaperBot.jda.getTextChannelById(channel).getAsMention())
+                                .setColor(0xff00).build()
+                ).queue();
             }
         }
     }
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent e) {
-        super.onButtonInteraction(e);
-        if (e.isFromGuild()) {
-            Main.servers.getUser(e.getUser(), e.getGuild());
+        String id = e.getComponentId();
+        switch (id) {
+            case "deleteBad" -> {
+                Message space = e.getMessage();
+                String[] association = RedReaperBot.servers.messageAssociation().getAssociation(e.getGuild(), space);
+                if (association != null) {
+                    RedReaperBot.servers.messageAssociation().removeAssociation(e.getGuild(), space);
+                    RedReaperBot.servers.changes();
+                    space.delete().queue();
+                    TextChannel tChannel = RedReaperBot.jda.getTextChannelById(association[1]);
+                    VoiceChannel vChannel = RedReaperBot.jda.getVoiceChannelById(association[1]);
+                    if (tChannel != null) {
+                        tChannel.retrieveMessageById(association[0]).queue(message -> message.delete().queue());
+                    } else if (vChannel != null){
+                        vChannel.retrieveMessageById(association[0]).queue(message -> message.delete().queue());
+                    }
+                }
+                e.deferEdit().queue();
+            }
+            case "keepBad" -> {
+                Message space = e.getMessage();
+                RedReaperBot.servers.messageAssociation().removeAssociation(e.getGuild(), space);
+                RedReaperBot.servers.changes();
+                space.delete().queue();
+                e.deferEdit().queue();
+            }
         }
     }
 
     @Override
     public void onUserContextInteraction(UserContextInteractionEvent e) {
         if (e.isFromGuild()) {
-            Main.servers.getUser(e.getUser(), e.getGuild());
+            RedReaperBot.servers.user().getUser(e.getUser(), e.getGuild());
             e.reply("This command is not yet implemented!").setEphemeral(true).queue();
         }
     }
@@ -57,7 +103,9 @@ public class EventHandler extends ListenerAdapter {
         if (e.isFromGuild()) {
             Guild guild = e.getGuild();
             User user = e.getAuthor();
-            Main.chatPoints.increment(guild, user);
+
+            new Thread(new MessageHandler(e, MessageHandleEnum.CKECK_FOR_LINKS)).run();
+            new Thread(new MessageHandler(e, MessageHandleEnum.INCREMENT_CHATPOINTS)).run();
         } else {
 
         }
@@ -65,12 +113,15 @@ public class EventHandler extends ListenerAdapter {
 
     public void chatpoints(SlashCommandInteractionEvent e) {
         try {
-            JSONObject stats = Main.servers.getUser(e.getUser(), e.getGuild()).getJSONObject(e.getUser().getId()).getJSONObject(STATS.key());
+            JSONObject stats = RedReaperBot.servers.stats().getStats(e.getUser(), e.getGuild());
 
             int points = stats.getInt(STATS_CHATPOINTS_POINTS.key());
             int level = stats.getInt(STATS_CHATPOINTS_LEVEL.key());
-            int[] pointStats = Main.chatPoints.calcExp(points);
+            int[] pointStats = RedReaperBot.chatPoints.calcExp(points);
             int remaining = pointStats[1];
+            if (points < 23) {
+                remaining = 23 - points;
+            }
             if (points != 0) {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("Overview");
@@ -95,6 +146,7 @@ public class EventHandler extends ListenerAdapter {
         } catch (JSONException ex) {
             ex.printStackTrace();
         }
-
     }
+
+
 }
