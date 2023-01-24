@@ -25,6 +25,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class EventHandler extends ListenerAdapter {
     String RED = "\u001B[31m";
@@ -74,7 +76,7 @@ public class EventHandler extends ListenerAdapter {
         switch (idEnum) {
             case DELETE_BADWORD -> {
                 Guild guild = guildByEmbed(e, space);
-                String[] association = RedReaperBot.messageAssociation.getAssociation(guild, space);
+                String[] association = RedReaperBot.messageAssociation.getAssociation(guild, e.getChannel(), space);
                 if (association != null) {
                     RedReaperBot.servers.changes();
                     TextChannel tChannel = RedReaperBot.jda.getTextChannelById(association[1]);
@@ -94,7 +96,7 @@ public class EventHandler extends ListenerAdapter {
                             return;
                         }
                     }
-                    RedReaperBot.messageAssociation.removeAssociation(guild, space);
+                    RedReaperBot.messageAssociation.removeAssociation(guild, e.getChannel(), space);
                 } else {
                     e.reply("There was no association found for this message!").setEphemeral(true).queue();
                     return;
@@ -106,7 +108,7 @@ public class EventHandler extends ListenerAdapter {
                 e.deferReply().queue();
                 Guild guild = guildByEmbed(e, space);
                 space.delete().queue();
-                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(guild, space);
+                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(guild, e.getChannel(), space);
                 if (!foundAssociation) {
                     e.getHook().sendMessage("There was no association found for this message!").queue();
                 } else {
@@ -155,12 +157,25 @@ public class EventHandler extends ListenerAdapter {
                 List<Message> toDelete = new ArrayList<>();
                 List<Message> messages = e.getChannel().asPrivateChannel().getHistory().retrievePast(100).complete();
                 for (Message message : messages) {
-                    if (message.getAuthor().equals(RedReaperBot.jda.getSelfUser())) {
+                    if (message.getAuthor().equals(RedReaperBot.jda.getSelfUser()) && !message.getContentRaw().equals("There are no messages to delete!")) {
                         toDelete.add(message);
                     }
+                }
+
+                if (toDelete.size() == 0) {
+                    e.getMessage().getAuthor().openPrivateChannel().complete().sendMessage("There are no messages to delete!").queue(message -> {
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                message.delete().queue();
+                            }
+                        }, 5000);
+                    });
+                    return;
                 }
                 e.getChannel().asPrivateChannel().purgeMessages(toDelete);
             }
         }
     }
 }
+

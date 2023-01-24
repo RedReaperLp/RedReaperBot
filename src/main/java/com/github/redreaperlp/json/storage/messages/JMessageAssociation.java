@@ -1,95 +1,59 @@
 package com.github.redreaperlp.json.storage.messages;
 
 import com.github.redreaperlp.RedReaperBot;
-import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
+import com.github.redreaperlp.enums.JsonSpecifier;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static com.github.redreaperlp.enums.JsonSpecifier.MESSAGE_ASSOCIATION;
-
 public class JMessageAssociation {
-    public String[] getAssociation(Guild guild, Message message) {
+
+    public void checkValidity(Guild g) {
+    }
+
+    public JSONObject getAssociations(Guild g) {
         try {
-            String temp = RedReaperBot.servers.getGuild(guild).getJSONObject(MESSAGE_ASSOCIATION.key()).getString(message.getId());
-            return temp.split(":"); // 0 = messageID, 1 = channelID
+            return RedReaperBot.servers.getGuild(g).getJSONObject(JsonSpecifier.MESSAGE_ASSOCIATION.key());
         } catch (JSONException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Adds an association to the JSON file
-     *
-     * @param guild             The guild the association is in
-     * @param identifier        The message that is used as an identifier (identifier: "associated:channel")
-     * @param associated        The message that is associated with the identifier (associated:)
-     * @param associatedChannel The channel of the associated message (:channel)
-     */
-    public void addAssociation(Guild guild, Message identifier, Message associated, MessageChannelUnion associatedChannel) {
-        try {
-            if (!RedReaperBot.servers.getGuild(guild).has(MESSAGE_ASSOCIATION.key())) {
-                RedReaperBot.servers.getGuild(guild).put(MESSAGE_ASSOCIATION.key(), new JSONObject());
-            }
-            RedReaperBot.servers.getGuild(guild).getJSONObject(MESSAGE_ASSOCIATION.key()).put(identifier.getId(), associated.getId() + ":" + associatedChannel.getId());
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean removeAssociation(Guild guild, Message identifier) {
-        return removeAssociation(guild, identifier.getId());
-    }
-
-    public boolean removeAssociation(Guild guild, String identifier) {
-        try {
-            TextChannel channel = RedReaperBot.jda.getTextChannelById(RedReaperBot.channelConfigurations.getChannelConfigurations(guild, ChannelConfigEn.BAD_WORDS_ASK));
             try {
-                Message message = channel.retrieveMessageById(identifier).complete();
-                message.delete().queue();
-            } catch (Exception e) {
-            } // Message was already deleted
-            RedReaperBot.servers.getGuild(guild).getJSONObject(MESSAGE_ASSOCIATION.key()).remove(identifier);
-            return true;
-        } catch (JSONException e) {
-            return false;
+                return RedReaperBot.servers.getGuild(g).put(JsonSpecifier.MESSAGE_ASSOCIATION.key(), new JSONObject());
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
-    public void checkValidity(Guild guild) {
+    public int getFreeIndex(Guild g) {
+        int i = 0;
+        while (getAssociations(g).has(String.valueOf(i))) {
+            i++;
+        }
+        return i;
+    }
+
+    public void addAssociation(MessageReceivedEvent e, Message deleterMSG, boolean toOwner) {
         try {
-            JSONObject obj = RedReaperBot.servers.getGuild(guild).getJSONObject(MESSAGE_ASSOCIATION.key());
-            List<String> keysToRemove = new ArrayList<>();
-            Iterator<String> i = obj.keys();
-            while (i.hasNext()) {
-                String key = i.next();
-                String[] temp = obj.getString(key).split(":");
-                try {
-                    RedReaperBot.jda.getTextChannelById(temp[1]).retrieveMessageById(temp[0]).complete();
-                    RedReaperBot.jda
-                            .getTextChannelById(RedReaperBot.channelConfigurations.getChannelConfigurations(guild, ChannelConfigEn.BAD_WORDS_ASK))
-                            .retrieveMessageById(key).complete();
-                } catch (Exception e) {
-                    keysToRemove.add(key);
-
-                }
-            }
-            for (String key : keysToRemove) {
-                removeAssociation(guild, key);
-            }
-            if (keysToRemove.size() > 0) {
-                RedReaperBot.servers.changes();
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+            String key = deleterMSG.getId() + ":" + e.getMessageId();
+            getAssociations(e.getGuild()).put(key,
+                    new JSONObject()
+                            .put(AssosiationsEn.DELETE_TARGET.key(), e.getMessageId())
+                            .put(AssosiationsEn.DELETE_TARGET_CHANNEL.key(), e.getChannel().getId())
+                            .put(AssosiationsEn.CHANNEL_STATUS.key(), toOwner ? "owner" : "channel")
+            );
+        } catch (JSONException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
+    public boolean removeAssociation(Guild guild, MessageChannelUnion channel, Message space) {
+        return false;
+    }
+
+    public String[] getAssociation(Guild guild, MessageChannelUnion channel, Message space) {
+        
+        return null;
+    }
 }
