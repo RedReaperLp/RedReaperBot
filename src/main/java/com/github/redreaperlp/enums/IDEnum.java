@@ -2,30 +2,35 @@ package com.github.redreaperlp.enums;
 
 public enum IDEnum {
 
-    USER("user"),
-    GUILD("guild"),
-    CHANNEL("channel"),
-    MESSAGE("message"),
-    ROLES("roles"),
+    USER("User", "user"),
+    GUILD("Guild", "guild"),
+    CHANNEL("Channel", "channel"),
+    MESSAGE("Message",  "message"),
+    ROLES("Roles", "roles"),
 
-    BAN_BADWORD("banBadword"),
-    KEEP_BADWORD("keepBadword"),
-    DELETE_BADWORD("deleteBadword"),
+    BAN_BADWORD("banBadword", "banBadword"),
+    KEEP_BADWORD("keepBadword", "keepBadword"),
+    DELETE_BADWORD("deleteBadword", "deleteBadword"),
 
-    WORD("word"),
+    WORD("word", "word"),
 
 
 
     ;
 
     private String key;
+    private String id;
 
     public String key() {
         return key;
     }
+    public String id() {
+        return id;
+    }
 
-    IDEnum(String key) {
+    IDEnum(String key, String id) {
         this.key = key;
+        this.id = id;
     }
 
     public static IDEnum fromKey(String key) {

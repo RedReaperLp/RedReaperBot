@@ -35,17 +35,7 @@ public class JMessageAssociation {
     }
 
     public void addAssociation(MessageReceivedEvent e, Message deleterMSG, boolean toOwner) {
-        try {
-            String key = deleterMSG.getId() + ":" + e.getMessageId();
-            getAssociations(e.getGuild()).put(key,
-                    new JSONObject()
-                            .put(AssosiationsEn.DELETE_TARGET.key(), e.getMessageId())
-                            .put(AssosiationsEn.DELETE_TARGET_CHANNEL.key(), e.getChannel().getId())
-                            .put(AssosiationsEn.CHANNEL_STATUS.key(), toOwner ? "owner" : "channel")
-            );
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
-        }
+
     }
 
     public boolean removeAssociation(Guild guild, MessageChannelUnion channel, Message space) {

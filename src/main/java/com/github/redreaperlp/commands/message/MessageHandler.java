@@ -54,8 +54,8 @@ public class MessageHandler implements Runnable {
                                 .addField(IDEnum.CHANNEL.key(), e.getChannel().getAsMention(), true)
                                 .addField(IDEnum.MESSAGE.key(), e.getMessage().getContentRaw(), false)
                                 .setColor(0xff0000)
-                                .setFooter("ID: " + e.getAuthor().getId())
-                                .setThumbnail(e.getAuthor().getAvatarUrl());
+                                .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1067565820428943500/ReportBanner.png")
+                                .setThumbnail(e.getGuild().getIconUrl());
 
                         Button keep = Button.success(IDEnum.KEEP_BADWORD.key(), "Keep");
                         Button delete = Button.danger(IDEnum.DELETE_BADWORD.key(), "Delete");
@@ -65,7 +65,7 @@ public class MessageHandler implements Runnable {
                             Message msg = channel.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
                             RedReaperBot.messageAssociation.addAssociation(e, msg, false);
                         } else if (channelPr != null) {
-                            embed.addField("Server", e.getGuild().getId() + " | " + e.getGuild().getName(), false);
+                            embed.addField("Server", e.getGuild().getName(), true);
                             Message msg = channelPr.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
                             RedReaperBot.messageAssociation.addAssociation(e, msg, true);
                         }
