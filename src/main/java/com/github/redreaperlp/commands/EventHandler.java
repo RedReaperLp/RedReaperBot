@@ -7,15 +7,19 @@ import com.github.redreaperlp.commands.message.MessageHandler;
 import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.IDEnum;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
+import com.github.redreaperlp.json.storage.messages.OAssociation;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -73,42 +77,26 @@ public class EventHandler extends ListenerAdapter {
         String id = e.getComponentId();
         Message space = e.getMessage();
         IDEnum idEnum = IDEnum.fromKey(id);
+        Guild guild = guildByEmbed(e);
+        OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
         switch (idEnum) {
             case DELETE_BADWORD -> {
-                Guild guild = guildByEmbed(e, space);
-                String[] association = RedReaperBot.messageAssociation.getAssociation(guild, e.getChannel(), space);
                 if (association != null) {
+                    association.targetMSG().delete().queue();
+                    e.reply("The Message has been Deleted!").setEphemeral(true).queue();
                     RedReaperBot.servers.changes();
-                    TextChannel tChannel = RedReaperBot.jda.getTextChannelById(association[1]);
-                    VoiceChannel vChannel = RedReaperBot.jda.getVoiceChannelById(association[1]);
-                    if (tChannel != null) {
-                        try {
-                            tChannel.retrieveMessageById(association[0]).complete().delete().queue();
-                        } catch (Exception exception) {
-                            e.reply("The message was already deleted!").setEphemeral(true).queue();
-                            return;
-                        }
-                    } else if (vChannel != null) {
-                        try {
-                            tChannel.retrieveMessageById(association[0]).complete().delete().queue();
-                        } catch (Exception exception) {
-                            e.reply("The message was already deleted!").setEphemeral(true).queue();
-                            return;
-                        }
-                    }
-                    RedReaperBot.messageAssociation.removeAssociation(guild, e.getChannel(), space);
+                    RedReaperBot.messageAssociation.removeAssociation(association, guild);
                 } else {
                     e.reply("There was no association found for this message!").setEphemeral(true).queue();
+                    e.getMessage().delete().queue();
                     return;
                 }
-                e.deferEdit().queue();
                 space.delete().queue();
             }
             case KEEP_BADWORD -> {
                 e.deferReply().queue();
-                Guild guild = guildByEmbed(e, space);
                 space.delete().queue();
-                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(guild, e.getChannel(), space);
+                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(association, guild);
                 if (!foundAssociation) {
                     e.getHook().sendMessage("There was no association found for this message!").queue();
                 } else {
@@ -120,21 +108,21 @@ public class EventHandler extends ListenerAdapter {
     }
 
 
-    public Guild guildByEmbed(ButtonInteractionEvent e, Message space) {
-        String serverID = null;
-        if (space.getChannel() instanceof PrivateChannel) {
-            List<MessageEmbed> ebList = space.getEmbeds();
-            for (MessageEmbed eb : ebList) {
-                for (MessageEmbed.Field field : eb.getFields()) {
-                    if (field.getName().equals("Server")) {
-                        serverID = field.getValue().split(" ")[0].trim();
-                    }
-                }
+    /**
+     * Gets the guild from the embed
+     * @note The message must have an embed with a field named #IDEnum.CHANNEL.key() with the channel id
+     * @param e
+     * @return the guild of the embed or null if not found
+     */
+    public Guild guildByEmbed(ButtonInteractionEvent e) {
+        GuildMessageChannel channel;
+        for (MessageEmbed.Field field : e.getMessage().getEmbeds().get(0).getFields()) {
+            if (field.getName().equals(IDEnum.CHANNEL.key())) {
+                channel = (GuildMessageChannel) RedReaperBot.jda.getTextChannelById(field.getValue().replace("<#", "").replace(">", ""));
+                return channel.getGuild();
             }
-        } else {
-            serverID = e.getGuild().getId();
         }
-        return RedReaperBot.jda.getGuildById(serverID);
+        return null;
     }
 
     @Override

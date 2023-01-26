@@ -63,11 +63,11 @@ public class MessageHandler implements Runnable {
 
                         if (channel != null) {
                             Message msg = channel.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
-                            RedReaperBot.messageAssociation.addAssociation(e, msg, false);
+                            RedReaperBot.messageAssociation.addAssociation(e, msg);
                         } else if (channelPr != null) {
                             embed.addField("Server", e.getGuild().getName(), true);
                             Message msg = channelPr.sendMessageEmbeds(embed.build()).setActionRow(keep, delete, ban).complete();
-                            RedReaperBot.messageAssociation.addAssociation(e, msg, true);
+                            RedReaperBot.messageAssociation.addAssociation(e, msg);
                         }
                         return;
                     }
