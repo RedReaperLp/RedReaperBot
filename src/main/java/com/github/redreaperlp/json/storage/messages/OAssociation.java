@@ -4,7 +4,6 @@ import com.github.redreaperlp.RedReaperBot;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 
 public class OAssociation {
     private Message deleterMSG;
@@ -18,12 +17,11 @@ public class OAssociation {
         this.deleterMSG = deleterMSG;
         key = deleterMSG.getId();
         try {
-            if (deleterMSG.getChannel() instanceof PrivateChannel) {
-                this.targetMSG = RedReaperBot.jda
-                        .getPrivateChannelById(targetMessageChannelID)
-                        .retrieveMessageById(targetMessageID).complete();
-            }
+            this.targetMSG = RedReaperBot.jda
+                    .getPrivateChannelById(targetMessageChannelID)
+                    .retrieveMessageById(targetMessageID).complete();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             this.targetMSG = RedReaperBot.jda
                     .getTextChannelById(targetMessageChannelID)
                     .retrieveMessageById(targetMessageID).complete();
@@ -57,7 +55,7 @@ public class OAssociation {
                 deleterMSG = RedReaperBot.jda.getTextChannelById(configuration).retrieveMessageById(key).complete();
             }
         } catch (Exception e) {
-            
+
         }
     }
 
