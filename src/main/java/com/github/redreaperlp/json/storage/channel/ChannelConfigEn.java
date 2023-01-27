@@ -5,7 +5,7 @@ public enum ChannelConfigEn {
 
     ;
 
-    private String key;
+    private final String key;
 
     ChannelConfigEn(String key) {
         this.key = key;

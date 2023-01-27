@@ -9,7 +9,7 @@ public enum JsonSpecifier {
 
     NAME("name"),
 
-    GUILD("servers"),
+    GUILD("guild"),
     USERS("users"),
 
     STORAGE("storage"),
@@ -20,12 +20,31 @@ public enum JsonSpecifier {
     BAD_MESSAGES("badMessages"),
 
 
+    CONTROL("control"),
 
+    CONTROLLABLE("controllable"),
+
+
+
+    ID("id"), // Layer 1
+
+    PROGRAM("program"), // Layer 2
+
+    PATH("path"), // Layer 2
+
+    PERMISSIONS("permissions"), // Layer 2
+    ROLES("roles"), // Layer 3
+    PERMISSION_USERS("users"), // Layer 3
+
+    SCREEN("screen"), // Layer 2
+    SCREEN_NAME("name"), // Layer 3
+    STOP("stop"), // Layer 3
+    START("start"), // Layer 3
     ;
 
 
 
-    private String key;
+    private final String key;
     private JSONObject defaultValue;
 
     JsonSpecifier(String key) {

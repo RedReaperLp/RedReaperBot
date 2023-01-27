@@ -118,7 +118,7 @@ public class EventHandler extends ListenerAdapter {
         GuildMessageChannel channel;
         for (MessageEmbed.Field field : e.getMessage().getEmbeds().get(0).getFields()) {
             if (field.getName().equals(IDEnum.CHANNEL.key())) {
-                channel = (GuildMessageChannel) RedReaperBot.jda.getTextChannelById(field.getValue().replace("<#", "").replace(">", ""));
+                channel = RedReaperBot.jda.getTextChannelById(field.getValue().replace("<#", "").replace(">", ""));
                 return channel.getGuild();
             }
         }

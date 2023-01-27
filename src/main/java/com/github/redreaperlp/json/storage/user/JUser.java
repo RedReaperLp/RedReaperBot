@@ -11,7 +11,7 @@ import static com.github.redreaperlp.RedReaperBot.servers;
 import static com.github.redreaperlp.enums.JsonSpecifier.*;
 
 public class JUser {
-    private JStats stats = new JStats();
+    private final JStats stats = new JStats();
 
     public void removeUser(User user, Guild guild) {
         try {

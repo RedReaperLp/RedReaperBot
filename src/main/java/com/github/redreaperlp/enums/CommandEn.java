@@ -76,8 +76,8 @@ public enum CommandEn {
 
     ;
 
-    private String key;
-    private String description;
+    private final String key;
+    private final String description;
     private CommandOptions[] options = null;
 
     CommandEn(String key, String description, CommandOptions... options) {

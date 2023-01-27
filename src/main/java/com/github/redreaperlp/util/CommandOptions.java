@@ -3,10 +3,10 @@ package com.github.redreaperlp.util;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 public class CommandOptions {
-    private String name;
-    private String description;
-    private boolean forced;
-    private OptionType type;
+    private final String name;
+    private final String description;
+    private final boolean forced;
+    private final OptionType type;
 
     public CommandOptions(String name, String description, boolean forced, OptionType type) {
         this.name = name;

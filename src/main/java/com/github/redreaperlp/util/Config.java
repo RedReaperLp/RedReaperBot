@@ -9,8 +9,8 @@ import java.util.Scanner;
 
 public class Config {
 
-    private List<String> config = new ArrayList<String>();
-    private File file = new File("config.yaml");
+    private final List<String> config = new ArrayList<String>();
+    private final File file = new File("config.yaml");
 
     public Config() {
         if (!file.exists()) {

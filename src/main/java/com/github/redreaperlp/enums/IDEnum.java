@@ -18,8 +18,8 @@ public enum IDEnum {
 
     ;
 
-    private String key;
-    private String id;
+    private final String key;
+    private final String id;
 
     public String key() {
         return key;

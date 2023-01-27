@@ -6,7 +6,7 @@ public enum ButtonEn {
     DELETE_MESSAGE("Delete Message"),
     ;
 
-    private String key;
+    private final String key;
 
     ButtonEn(String key) {
         this.key = key;

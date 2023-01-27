@@ -21,7 +21,7 @@ public class JServers {
 
     public JSONObject storageObj = new JSONObject();
 
-    private JUser user = new JUser();
+    private final JUser user = new JUser();
 
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
@@ -72,6 +72,21 @@ public class JServers {
         }
     }
 
+    private void addGuild(String guildID) {
+        try {
+            checkContain();
+            if (!storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).has(guildID)) {
+                storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guildID, new JSONObject()
+                        .put(USERS.key(), new JSONObject()));
+                changes();
+            } else {
+                storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).getJSONObject(guildID);
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public JSONObject getGuild(Guild guild) {
         addGuild(guild);
         try {
@@ -79,6 +94,19 @@ public class JServers {
         } catch (JSONException e) {
             try {
                 return storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guild.getId(), new JSONObject());
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public JSONObject getGuild(String guildID) {
+        addGuild(guildID);
+        try {
+            return storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).getJSONObject(guildID);
+        } catch (JSONException e) {
+            try {
+                return storageObj.getJSONObject(STORAGE.key()).getJSONObject(GUILD.key()).put(guildID, new JSONObject());
             } catch (JSONException ex) {
                 throw new RuntimeException(ex);
             }
@@ -119,7 +147,7 @@ public class JServers {
     }
 
     public JStats stats() {
-        return user().stats();
+        return user.stats();
     }
 
 

@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class DeleterThread implements Runnable {
     public static List<String> ids = new ArrayList<>();
     public static List<String> runningIds = new ArrayList<>();
-    private SlashCommandInteractionEvent e;
-    private InteractionHook hook;
+    private final SlashCommandInteractionEvent e;
+    private final InteractionHook hook;
     private int cleared;
-    private int action;
+    private final int action;
 
     Object lock = new Object();
 

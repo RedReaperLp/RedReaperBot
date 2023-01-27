@@ -10,7 +10,7 @@ public enum AssosiationsEn {
 
     ;
 
-    private String key;
+    private final String key;
 
     AssosiationsEn(String key) {
         this.key = key;

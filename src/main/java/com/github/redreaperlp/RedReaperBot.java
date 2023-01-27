@@ -8,9 +8,13 @@ import com.github.redreaperlp.events.OnUserJoin;
 import com.github.redreaperlp.json.settings.JUserSettings;
 import com.github.redreaperlp.json.storage.JServers;
 import com.github.redreaperlp.json.storage.channel.JChannelConfigurations;
+import com.github.redreaperlp.json.storage.control.Control;
 import com.github.redreaperlp.json.storage.messages.JBadMessages;
 import com.github.redreaperlp.json.storage.messages.JMessageAssociation;
+import com.github.redreaperlp.json.storage.programs.Programs;
+import com.github.redreaperlp.json.storage.programs.permissions.Permissions;
 import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
+import com.github.redreaperlp.networking.Receiver;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.thread.FinalizerThread;
@@ -18,6 +22,7 @@ import com.github.redreaperlp.util.thread.SaveCaller;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -37,6 +42,9 @@ public class RedReaperBot {
     public static JChannelConfigurations channelConfigurations = new JChannelConfigurations();
     public static JMessageAssociation messageAssociation = new JMessageAssociation();
     public static JBadMessages badMessages = new JBadMessages();
+    public static Control control = new Control();
+    public static Programs programs = new Programs();
+    public static Permissions permissions = new Permissions();
 
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
@@ -58,7 +66,9 @@ public class RedReaperBot {
         runtime.addShutdownHook(new Thread(new SaveCaller()));
         main.start();
     }
+
     public static JDA jda = null;
+
     public void start() throws InterruptedException {
         JDABuilder build = JDABuilder.createDefault(conf.getConfig(ConfEnum.TOKEN.key()));
         build.setActivity(Activity.playing(conf.getConfig(ConfEnum.PLAYING.key())));
@@ -109,6 +119,7 @@ public class RedReaperBot {
             ).queue();
         }
         new Thread(new FinalizerThread()).start();
+        new Thread(new Receiver()).start();
     }
 
     public void enableIntents(JDABuilder build) {
@@ -145,7 +156,7 @@ public class RedReaperBot {
             for (CommandOptions options : ops) {
                 command.addOption(options.type(), options.name(), options.description(), options.forced());
             }
-        };
+        }
         return command;
     }
 }

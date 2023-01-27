@@ -11,7 +11,7 @@ import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_LEVEL;
 import static com.github.redreaperlp.enums.JsonSpecifier.STATS_CHATPOINTS_POINTS;
 
 public class JStats {
-    private JChatPoints chatPoints = new JChatPoints();
+    private final JChatPoints chatPoints = new JChatPoints();
 
     public JSONObject getStats(User user, Guild guild) {
         try {

@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.Message;
 public class OAssociation {
     private Message deleterMSG;
     private Message targetMSG;
-    private String key;
+    private final String key;
     private Guild guild;
     private String associatedChannelID;
     private String associatedMSGID;

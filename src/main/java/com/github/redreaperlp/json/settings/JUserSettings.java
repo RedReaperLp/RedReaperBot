@@ -12,7 +12,7 @@ import static com.github.redreaperlp.enums.ConfEnum.USER_SETTINGS;
 
 public class JUserSettings {
     public static JSONObject userSettings;
-    private File file = new File(RedReaperBot.conf.getConfig(USER_SETTINGS.key()));
+    private final File file = new File(RedReaperBot.conf.getConfig(USER_SETTINGS.key()));
 
 
 
