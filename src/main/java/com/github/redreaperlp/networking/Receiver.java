@@ -22,7 +22,8 @@ public class Receiver implements Runnable {
             try {
                 Socket receiver = serverSocket.accept();
                 BufferedReader rs = new BufferedReader(new InputStreamReader(receiver.getInputStream()));
-                action = Codec.decode(rs.lines().toList().get(0));
+                String answer = rs.lines().toList().get(0);
+                action = Codec.decode(answer);
                 action.IP(receiver.getInetAddress());
                 new ActionHandler(action);
                 rs.close();

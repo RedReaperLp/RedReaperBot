@@ -29,7 +29,9 @@ public class ActionHandler implements Runnable {
         if (auth != null) {
 
         } else return;
-        int port = Integer.parseInt(action.get(MessageAction.PORT));
+        String portString = action.get(MessageAction.PORT);
+        System.out.println("Port: " + portString);
+        int port = Integer.parseInt(portString);
 
         if (interactOptions != null) {
             try {
@@ -37,7 +39,6 @@ public class ActionHandler implements Runnable {
                 for (Iterator it = options.keys(); it.hasNext(); ) {
                     String key = (String) it.next();
                     JSONObject option = options.getJSONObject(key);
-                    System.out.println(key);
                     String guild = option.getString(JsonSpecifier.GUILD.key());
                     if (RedReaperBot.servers.storageObj.getJSONObject(JsonSpecifier.STORAGE.key()).getJSONObject(JsonSpecifier.GUILD.key()).has(guild)) {
                         JSONObject guildObj = RedReaperBot.servers.getGuild(guild);

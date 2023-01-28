@@ -8,6 +8,7 @@ import java.io.*;
 public class JsonHelper {
     private static boolean changesUsersettings = false;
     private static boolean changesServers = false;
+    private static boolean tokenChanges = false;
 
     public static void serverFinalizer(File file, JSONObject toSave) {
         finalize(changesServers, file, toSave);
@@ -17,6 +18,11 @@ public class JsonHelper {
     public static void usersettingsFinalizer(File file, JSONObject toSave) {
         finalize(changesUsersettings, file, toSave);
         changesUsersettings = false;
+    }
+
+    public static void tokenFinalizer(File file, JSONObject toSave) {
+        finalize(changesUsersettings, file, toSave);
+        tokenChanges = false;
     }
 
     private static void finalize(boolean changes, File file, JSONObject toSave) {
@@ -78,5 +84,9 @@ public class JsonHelper {
 
     public static void serversChange() {
         changesServers = true;
+    }
+
+    public static void tokenChange() {
+        tokenChanges = true;
     }
 }

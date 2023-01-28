@@ -68,6 +68,10 @@ public class EventHandler extends ListenerAdapter {
                 RedReaperBot.badMessages.addBadMessage(e);
             } else if (e.getName().equals(CommandEn.REMOVE_BAD_WORD.key())) {
                 RedReaperBot.badMessages.removeBadMessage(e);
+            } else if (e.getName().equals(CommandEn.GENERATE_AUTH_TOKEN.key())) {
+                e.deferReply().queue();
+                String token = RedReaperBot.generateRandomString(15);
+                RedReaperBot.authTokens.addToken(e.getUser(), token);
             }
         }
     }

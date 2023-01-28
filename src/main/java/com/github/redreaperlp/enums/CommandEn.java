@@ -72,9 +72,9 @@ public enum CommandEn {
     ADD_BAD_WORD("add-bad-word", "Add words to Blacklist to get Notified",
             new CommandOptions(IDEnum.WORD.id(), "The word you want to add to the Blacklist", true, OptionType.STRING)),
     REMOVE_BAD_WORD("remove-bad-word", "remove words from Blacklist to get Notified",
-                         new CommandOptions(IDEnum.WORD.id(), "The word you want to remove from the Blacklist", true, OptionType.STRING))
-
-    ;
+            new CommandOptions(IDEnum.WORD.id(), "The word you want to remove from the Blacklist", true, OptionType.STRING)),
+    GENERATE_AUTH_TOKEN("generate-auth-token","Generates a Token for this Server, which can be used to access you Server"),
+            ;
 
     private final String key;
     private final String description;
@@ -102,7 +102,8 @@ public enum CommandEn {
     public CommandOptions[] options() {
         return options;
     }
+
     public String optionName(int index) {
         return options[index].name();
     }
-}
+    }

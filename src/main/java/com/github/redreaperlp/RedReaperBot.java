@@ -14,11 +14,13 @@ import com.github.redreaperlp.json.storage.messages.JMessageAssociation;
 import com.github.redreaperlp.json.storage.programs.Programs;
 import com.github.redreaperlp.json.storage.programs.permissions.Permissions;
 import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
+import com.github.redreaperlp.json.token.JToken;
 import com.github.redreaperlp.networking.Receiver;
 import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.thread.FinalizerThread;
 import com.github.redreaperlp.util.thread.SaveCaller;
+import com.sun.org.apache.xerces.internal.impl.xpath.XPath;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 public class RedReaperBot {
 
@@ -45,6 +48,7 @@ public class RedReaperBot {
     public static Control control = new Control();
     public static Programs programs = new Programs();
     public static Permissions permissions = new Permissions();
+    public static JToken authTokens = new JToken();
 
     String GREEN = "\u001B[32m";
     String RED = "\u001B[31m";
@@ -158,5 +162,16 @@ public class RedReaperBot {
             }
         }
         return command;
+    }
+
+    public static String generateRandomString(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder result = new StringBuilder();
+        while (length > 0) {
+            Random rand = new Random();
+            result.append(characters.charAt(rand.nextInt(characters.length())));
+            length--;
+        }
+        return result.toString();
     }
 }
