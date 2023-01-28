@@ -33,10 +33,10 @@ public class Permissions {
 
     public String role(Guild g, int id) {
         try {
-            return RedReaperBot.permissions.permissions(g, id).getString(JsonSpecifier.ROLES.key());
+            return RedReaperBot.permissions.permissions(g, id).getString(JsonSpecifier.PERMISSION_ROLES.key());
         } catch (JSONException e) {
             try {
-                return RedReaperBot.permissions.permissions(g, id).put(JsonSpecifier.ROLES.key(), "").toString();
+                return RedReaperBot.permissions.permissions(g, id).put(JsonSpecifier.PERMISSION_ROLES.key(), "").toString();
             } catch (JSONException ex) {
                 throw new RuntimeException(ex);
             }

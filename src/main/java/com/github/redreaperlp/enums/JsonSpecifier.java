@@ -22,9 +22,6 @@ public enum JsonSpecifier {
 
     CONTROL("control"),
 
-    CONTROLLABLE("controllable"),
-
-
 
     ID("id"), // Layer 1
 
@@ -33,13 +30,11 @@ public enum JsonSpecifier {
     PATH("path"), // Layer 2
 
     PERMISSIONS("permissions"), // Layer 2
-    ROLES("roles"), // Layer 3
+    PERMISSION_ROLES("roles"), // Layer 3
     PERMISSION_USERS("users"), // Layer 3
+    TARGET_IP("targetIp"), // Layer 3)
 
-    SCREEN("screen"), // Layer 2
-    SCREEN_NAME("name"), // Layer 3
-    STOP("stop"), // Layer 3
-    START("start"), // Layer 3
+
     ;
 
 

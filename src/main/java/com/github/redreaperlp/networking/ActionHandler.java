@@ -20,46 +20,53 @@ public class ActionHandler implements Runnable {
 
     @Override
     public void run() {
-        String auth = action.get(MessageAction.AUTHENTICATE);
-        String ping = action.get(MessageAction.PING);
-        String pong = action.get(MessageAction.PONG);
-        String interactOptions = action.get(MessageAction.INTERACTION_OPTIONS);
-        MessageAction.PONG.value(ping);
-        MessageAction.AUTHENTICATE.value(auth);
-        if (auth != null) {
-
-        } else return;
-        String portString = action.get(MessageAction.PORT);
-        System.out.println("Port: " + portString);
+        String auth = action.get(EMessageAction.AUTHENTICATE);
+        String ping = action.get(EMessageAction.PING);
+        String pong = action.get(EMessageAction.PONG);
+        String interactOptions = action.get(EMessageAction.INTERACTION_OPTIONS);
+        EMessageAction.PONG.value(ping);
+        EMessageAction.AUTHENTICATE.value(auth);
+        String portString = action.get(EMessageAction.PORT);
         int port = Integer.parseInt(portString);
-
+        if (auth != null) {
+            EMessageAction.ACCESS.value("404");
+            if (!RedReaperBot.authTokens.getToken(auth)) {
+                send(port, Codec.encode(EMessageAction.ACCESS, EMessageAction.PONG));
+            }
+        } else return;
+        System.out.println("Interact options: " + interactOptions);
         if (interactOptions != null) {
             try {
                 JSONObject options = new JSONObject(interactOptions);
                 for (Iterator it = options.keys(); it.hasNext(); ) {
                     String key = (String) it.next();
                     JSONObject option = options.getJSONObject(key);
-                    String guild = option.getString(JsonSpecifier.GUILD.key());
-                    if (RedReaperBot.servers.storageObj.getJSONObject(JsonSpecifier.STORAGE.key()).getJSONObject(JsonSpecifier.GUILD.key()).has(guild)) {
-                        JSONObject guildObj = RedReaperBot.servers.getGuild(guild);
-                        if (guildObj.has(JsonSpecifier.CONTROL.key())) {
-                            guildObj.getJSONObject(JsonSpecifier.CONTROL.key()).put(key, option);
-                        } else {
-                            guildObj.put(JsonSpecifier.CONTROL.key(), new JSONObject().put(key, option));
-                        }
-                        RedReaperBot.servers.changes();
+                    String guildID = RedReaperBot.authTokens.getGuildID(auth);
+                    JSONObject guild = RedReaperBot.servers.getGuild(guildID);
+                    if (!guild.has(JsonSpecifier.CONTROL.key())) {
+                        guild.put(JsonSpecifier.CONTROL.key(), new JSONObject());
                     }
+                    JSONObject control = guild.getJSONObject(JsonSpecifier.CONTROL.key());
+                    control.put(key, option.put(JsonSpecifier.TARGET_IP.key(), action.IP().getHostName()));
+
+                    RedReaperBot.servers.changes();
                 }
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                EMessageAction.ERROR.value("Invalid JSON");
             }
+            send(port, Codec.encode(EMessageAction.ACCESS, EMessageAction.PONG, EMessageAction.ERROR));
+            return;
         }
+        EMessageAction.ACCESS.value("200");
+        send(port, Codec.encode(EMessageAction.PONG, EMessageAction.AUTHENTICATE, EMessageAction.ACCESS));
+    }
 
+    public void send(int port, String message) {
         Socket socket = null;
         try {
             socket = new Socket(action.IP(), port);
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            writer.write(Codec.encode(MessageAction.PONG, MessageAction.AUTHENTICATE));
+            writer.write(message);
             writer.flush();
             socket.close();
         } catch (Exception e) {

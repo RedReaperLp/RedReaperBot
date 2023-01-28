@@ -1,6 +1,6 @@
 package com.github.redreaperlp.networking;
 
-public enum MessageAction {
+public enum EMessageAction {
     AUTHENTICATE(1),
     PORT(2),
     TASK_KEY(10),
@@ -8,15 +8,19 @@ public enum MessageAction {
     PONG(34),
 
     INTERACTION_OPTIONS(50),    // 50-59
+    CONTROL_ID(35), // [1] = Start, [2] = Stop, [3] = Log, [4] = Status, [5] = Restart
+
+    ACCESS(800),
+    ERROR(404)
 
     ;
 
-    MessageAction(int id) {
+    EMessageAction(int id) {
         this.id = id;
     }
 
-    public MessageAction fromId(int id) {
-        for (MessageAction action : values()) {
+    public EMessageAction fromId(int id) {
+        for (EMessageAction action : values()) {
             if (action.id() == id) {
                 return action;
             }

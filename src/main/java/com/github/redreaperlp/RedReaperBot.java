@@ -20,11 +20,9 @@ import com.github.redreaperlp.util.CommandOptions;
 import com.github.redreaperlp.util.Config;
 import com.github.redreaperlp.util.thread.FinalizerThread;
 import com.github.redreaperlp.util.thread.SaveCaller;
-import com.sun.org.apache.xerces.internal.impl.xpath.XPath;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -119,7 +117,9 @@ public class RedReaperBot {
                     prepareCommand(CommandEn.CLEAR),
                     prepareCommand(CommandEn.BAD_WORDS_CHANNEL),
                     prepareCommand(CommandEn.ADD_BAD_WORD),
-                    prepareCommand(CommandEn.REMOVE_BAD_WORD)
+                    prepareCommand(CommandEn.REMOVE_BAD_WORD),
+                    prepareCommand(CommandEn.GENERATE_AUTH_TOKEN),
+                    prepareCommand(CommandEn.PANEL)
             ).queue();
         }
         new Thread(new FinalizerThread()).start();

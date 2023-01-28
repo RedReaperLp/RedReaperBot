@@ -9,10 +9,10 @@ import java.net.Socket;
 public class Receiver implements Runnable {
 
     private Action action = null;
+    ServerSocket serverSocket = null;
 
     @Override
     public void run() {
-        ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(6000);
         } catch (IOException e) {

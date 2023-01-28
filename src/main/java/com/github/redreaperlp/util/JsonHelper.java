@@ -8,7 +8,7 @@ import java.io.*;
 public class JsonHelper {
     private static boolean changesUsersettings = false;
     private static boolean changesServers = false;
-    private static boolean tokenChanges = false;
+    private static boolean changesToken = false;
 
     public static void serverFinalizer(File file, JSONObject toSave) {
         finalize(changesServers, file, toSave);
@@ -21,8 +21,8 @@ public class JsonHelper {
     }
 
     public static void tokenFinalizer(File file, JSONObject toSave) {
-        finalize(changesUsersettings, file, toSave);
-        tokenChanges = false;
+        finalize(changesToken, file, toSave);
+        changesToken = false;
     }
 
     private static void finalize(boolean changes, File file, JSONObject toSave) {
@@ -33,7 +33,7 @@ public class JsonHelper {
                 writer.write(toSave.toString(4));
                 writer.flush();
                 writer.close();
-                System.out.println("Saved changes to storage.json");
+                System.out.println("Saved " + file.getName() + " successfully!");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -87,6 +87,6 @@ public class JsonHelper {
     }
 
     public static void tokenChange() {
-        tokenChanges = true;
+        changesToken = true;
     }
 }

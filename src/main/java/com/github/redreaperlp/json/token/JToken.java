@@ -2,12 +2,10 @@ package com.github.redreaperlp.json.token;
 
 import com.github.redreaperlp.util.JsonHelper;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.User;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.util.Iterator;
 
 public class JToken {
     private File file = new File("tokens.json");
@@ -18,6 +16,7 @@ public class JToken {
             if (!file.exists()) {
                 file.createNewFile();
                 tokens = new JSONObject();
+                changes();
             } else {
                 resolver();
             }
@@ -27,11 +26,47 @@ public class JToken {
     }
 
     public void addToken(Guild g, String token) {
+        try {
+            tokens.put(String.valueOf(g.getIdLong()), token);
+            changes();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public void removeToken(Guild g) {
+        try {
+            if (!tokens.has(String.valueOf(g.getIdLong()))) return;
+            changes();
+            tokens.remove(String.valueOf(g.getIdLong()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getToken(Guild g) {
+        try {
+            if (!tokens.has(String.valueOf(g.getIdLong()))) return null;
+            return tokens.getString(String.valueOf(g.getIdLong()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean getToken(String token) {
+        try {
+            for (Iterator it = tokens.keys(); it.hasNext(); ) {
+                String key = (String) it.next();
+                if (tokens.getString(key).equals(token)) return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void resolver() {
-        JsonHelper.resolver(file);
+        this.tokens = JsonHelper.resolver(file);
     }
 
     public void finalizer() {
@@ -40,5 +75,17 @@ public class JToken {
 
     public void changes() {
         JsonHelper.tokenChange();
+    }
+
+    public String getGuildID(String auth) {
+        try {
+            for (Iterator it = tokens.keys(); it.hasNext(); ) {
+                String key = (String) it.next();
+                if (tokens.getString(key).equals(auth)) return key;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

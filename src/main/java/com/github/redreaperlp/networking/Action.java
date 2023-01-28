@@ -10,7 +10,7 @@ public class Action {
         this.input = input;
     }
 
-    public String get(MessageAction action) {
+    public String get(EMessageAction action) {
         String[] split = input.split("#");
         for (String s : split) {
             String[] split1 = s.split("=");

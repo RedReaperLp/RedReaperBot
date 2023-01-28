@@ -10,15 +10,7 @@ import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import com.github.redreaperlp.json.storage.messages.OAssociation;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
@@ -26,6 +18,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,31 +42,94 @@ public class EventHandler extends ListenerAdapter {
                 e.deferReply().queue();
                 new Thread(new DeleterThread(e)).run();
             } else if (e.getName().equals(CommandEn.BAD_WORDS_CHANNEL.key())) {
-                OptionMapping mapping = e.getOption(IDEnum.CHANNEL.key());
-                String channel = null;
-                if (mapping != null) {
-                    channel = mapping.getAsChannel().getId();
-                } else {
-                    channel = e.getChannel().getId();
-                }
-                RedReaperBot.channelConfigurations.setChannelConfigurations(e.getGuild(), ChannelConfigEn.BAD_WORDS_ASK, channel);
-                RedReaperBot.servers.changes();
-                e.replyEmbeds(
-                        new EmbedBuilder()
-                                .setTitle("Bad Words Channel")
-                                .setDescription("The bad words channel has been set to " + RedReaperBot.jda.getTextChannelById(channel).getAsMention())
-                                .setColor(0xff00).build()
-                ).queue();
+                setBadWordsChannel(e);
             } else if (e.getName().equals(CommandEn.ADD_BAD_WORD.key())) {
                 RedReaperBot.badMessages.addBadMessage(e);
             } else if (e.getName().equals(CommandEn.REMOVE_BAD_WORD.key())) {
                 RedReaperBot.badMessages.removeBadMessage(e);
             } else if (e.getName().equals(CommandEn.GENERATE_AUTH_TOKEN.key())) {
-                e.deferReply().queue();
-                String token = RedReaperBot.generateRandomString(15);
-                RedReaperBot.authTokens.addToken(e.getUser(), token);
+                generateToken(e);
+            } else if (e.getName().equals(CommandEn.PANEL.key())) {
+                panel(e);
             }
         }
+    }
+
+    private void panel(SlashCommandInteractionEvent e) {
+        int conrolableID = e.getOption("id").getAsInt();
+        System.out.println("Panel: " + conrolableID);
+        boolean hasPermission = false;
+        List<String> users = RedReaperBot.control.users(e.getGuild(), conrolableID);
+        if (users != null) {
+            if (users.contains(e.getUser().getId())) {
+                hasPermission = true;
+            }
+        }
+        if (!hasPermission) {
+            List<String> roles = RedReaperBot.control.roles(e.getGuild(), conrolableID);
+            if (roles != null) {
+                List<Role> userRoles = e.getMember().getRoles();
+                for (Role role : userRoles) {
+                    if (roles.contains(role.getId())) {
+                        hasPermission = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (hasPermission) {
+            MessageEmbed eb = new EmbedBuilder()
+                    .setTitle(RedReaperBot.control.program(e.getGuild(), conrolableID))
+                    .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1069017159877009438/PanelBanner.png")
+                    .addField("Control Panel", "This is the control panel for the program " + RedReaperBot.control.program(e.getGuild(), conrolableID), false)
+                    .addField("Start", "Click button to start the program", true)
+                    .addField("Stop", "Click button to stop the program", true)
+                    .addField("Logs", "Click button to see the logs", false)
+                    .addField("Status", "Click button to see the status", false)
+                    .addField("Restart", "Click button to restart the program", false)
+                    .setThumbnail(e.getGuild().getIconUrl())
+                    .setColor(0xff00).build();
+            e.replyEmbeds(eb).addActionRow(
+                    Button.primary("start" + conrolableID, "Start"),
+                    Button.danger("stop" + conrolableID, "Stop"),
+                    Button.secondary("logs" + conrolableID, "Logs"),
+                    Button.secondary("status" + conrolableID, "Status"),
+                    Button.secondary("restart" + conrolableID, "Restart")
+            ).queue();
+        } else {
+            e.reply("You dont have permission to use this panel!").setEphemeral(true).queue();
+        }
+    }
+
+    private void generateToken(SlashCommandInteractionEvent e) {
+        String token = RedReaperBot.generateRandomString(15);
+        RedReaperBot.authTokens.removeToken(e.getGuild());
+        RedReaperBot.authTokens.addToken(e.getGuild(), token);
+        MessageEmbed eb = new EmbedBuilder().setTitle("Auth Token")
+                .addField("Token", token, false)
+                .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1069007091341217892/YourTokenBanner.png")
+                .addField("Be Careful!", "Keep it good, once Generated you cant show it again", false)
+                .setThumbnail(e.getGuild().getIconUrl())
+                .setColor(0xff00).build();
+        e.replyEmbeds(eb).setEphemeral(true).queue();
+    }
+
+    private void setBadWordsChannel(SlashCommandInteractionEvent e) {
+        OptionMapping mapping = e.getOption(IDEnum.CHANNEL.key());
+        String channel = null;
+        if (mapping != null) {
+            channel = mapping.getAsChannel().getId();
+        } else {
+            channel = e.getChannel().getId();
+        }
+        RedReaperBot.channelConfigurations.setChannelConfigurations(e.getGuild(), ChannelConfigEn.BAD_WORDS_ASK, channel);
+        RedReaperBot.servers.changes();
+        e.replyEmbeds(
+                new EmbedBuilder()
+                        .setTitle("Bad Words Channel")
+                        .setDescription("The bad words channel has been set to " + RedReaperBot.jda.getTextChannelById(channel).getAsMention())
+                        .setColor(0xff00).build()
+        ).queue();
     }
 
     @Override
@@ -114,9 +170,10 @@ public class EventHandler extends ListenerAdapter {
 
     /**
      * Gets the guild from the embed
-     * @note The message must have an embed with a field named #IDEnum.CHANNEL.key() with the channel id
+     *
      * @param e
      * @return the guild of the embed or null if not found
+     * @note The message must have an embed with a field named #IDEnum.CHANNEL.key() with the channel id
      */
     public Guild guildByEmbed(ButtonInteractionEvent e) {
         GuildMessageChannel channel;
