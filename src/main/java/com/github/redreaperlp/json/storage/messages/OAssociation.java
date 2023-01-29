@@ -21,7 +21,6 @@ public class OAssociation {
                     .getPrivateChannelById(targetMessageChannelID)
                     .retrieveMessageById(targetMessageID).complete();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             this.targetMSG = RedReaperBot.jda
                     .getTextChannelById(targetMessageChannelID)
                     .retrieveMessageById(targetMessageID).complete();
@@ -42,8 +41,6 @@ public class OAssociation {
                         .retrieveMessageById(associatedMSGID).complete();
             }
         } catch (Exception e) {
-            //TODO: Remove this
-            System.out.println(e.getMessage());
         }
         this.guild = g;
 

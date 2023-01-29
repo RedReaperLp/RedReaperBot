@@ -36,16 +36,18 @@ public class ActionHandler implements Runnable {
             }
         } else return;
         if (pong != null) {
+            TaskRegister.removeTaskID(pong);
             if (answer != null) {
                 AnswerUtil.addAnswer(pong, answer);
             }
             if (TaskRegister.containsTaskID(pong)) {
-                TaskRegister.removeTaskID(pong);
             }
+
+
+
             return;
         }
         if (!TaskRegister.containsDoneTaskID(ping)) {
-            System.out.println("Interact options: " + interactOptions);
             if (interactOptions != null) {
                 try {
                     JSONObject options = new JSONObject(interactOptions);

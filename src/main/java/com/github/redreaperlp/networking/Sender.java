@@ -2,13 +2,13 @@ package com.github.redreaperlp.networking;
 
 import com.github.redreaperlp.RedReaperBot;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.utils.FileUpload;
 
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-public class Sender implements Runnable{
+public class Sender implements Runnable {
 
     private String targetIp;
     private int port;
@@ -25,7 +25,6 @@ public class Sender implements Runnable{
 
         int counter = 1;
         while (TaskRegister.containsTaskID(taskID)) {
-            System.out.println(counter);
             if (counter > 5) {
                 TaskRegister.removeTaskID(taskID);
                 break;
@@ -34,17 +33,42 @@ public class Sender implements Runnable{
             try {
                 counter++;
                 new Thread(this).start();
-                System.out.println("Sent Message");
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         }
-        AnswerAssosiation answerAssosiation = AnswerUtil.getAnswer(taskID);
-        if (answerAssosiation != null) {
-            e.getHook().sendMessage(answerAssosiation.getAnswer()).queue();
-            AnswerUtil.removeAnswer(taskID);
-        } else {
+        try {
+            AnswerAssosiation answerAssosiation = AnswerUtil.getAnswer(taskID);
+            if (answerAssosiation != null) {
+                String[] answerArray = answerAssosiation.getAnswer().split("-", 2);
+                answerArray[1] = answerArray[1].substring(0, answerArray[1].length() - 1);
+                int type = Integer.parseInt(answerArray[0]);
+                String answer = answerArray[1];
+                switch (type) {
+                    case 1:
+                        e.getHook().sendMessage(answer.replace("%line", "\n")).queue();
+                        break;
+                    case 2:
+                        try {
+                            File file = new File("Log.txt");
+                            FileWriter writer = new FileWriter(file);
+                            writer.write(answer.replaceFirst("%line", "").replace("%line", "\n"));
+                            writer.flush();
+                            writer.close();
+                            e.getHook().sendFiles(FileUpload.fromData(file)).queue();
+                        } catch (IOException ex) {
+                            e.getHook().sendMessage("Something went wrong!");
+                        }
+                        break;
+                }
+
+
+                AnswerUtil.removeAnswer(taskID);
+            } else {
+                e.getHook().sendMessage("No answer received").queue();
+            }
+        }catch (Exception ex) {
             e.getHook().sendMessage("No answer received").queue();
         }
     }

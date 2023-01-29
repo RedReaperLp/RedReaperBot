@@ -24,6 +24,7 @@ public class Control {
             }
         }
     }
+
     public JSONObject controlable(Guild g, int id) {
         return controlable(g.getId(), id);
     }
@@ -48,37 +49,37 @@ public class Control {
         }
     }
 
-    public JSONObject permissions(Guild g, int id) {
-        return permissions(g.getId(), id);
+    public JSONObject permissions(Guild g, EPermission perm, int id) {
+        return permissions(g.getId(), perm, id);
     }
 
-    public JSONObject permissions(String guild, int id) {
+    public JSONObject permissions(String guild, EPermission perm, int id) {
         try {
-            return controlable(guild, id).getJSONObject(JsonSpecifier.PERMISSIONS.key());
+            return controlable(guild, id).getJSONObject(JsonSpecifier.PERMISSIONS.key()).getJSONObject(perm.key());
         } catch (Exception e) {
             return null; //This only can be set through BotSender
         }
     }
 
-    public List<String> roles (Guild g, int id) {
-        return roles(g.getId(), id);
+    public List<String> roles(Guild g, EPermission perm, int id) {
+        return roles(g.getId(), perm, id);
     }
 
-    public List<String> roles (String guild, int id) {
+    public List<String> roles(String guild, EPermission perm, int id) {
         try {
-            return Arrays.stream(permissions(guild, id).getString(JsonSpecifier.PERMISSION_ROLES.key()).split("~")).toList();
+            return Arrays.stream(permissions(guild, perm, id).getString(JsonSpecifier.PERMISSION_ROLES.key()).split("~")).toList();
         } catch (Exception e) {
             return null; //This only can be set through BotSender
         }
     }
 
-    public List<String> users (Guild g, int id) {
-        return users(g.getId(), id);
+    public List<String> users(Guild g, EPermission perm, int id) {
+        return users(g.getId(), perm, id);
     }
 
-    public List<String> users (String guild, int id) {
+    public List<String> users(String guild, EPermission perm, int id) {
         try {
-            return Arrays.stream(permissions(guild, id).getString(JsonSpecifier.PERMISSION_USERS.key()).split("~")).toList();
+            return Arrays.stream(permissions(guild, perm, id).getString(JsonSpecifier.PERMISSION_USERS.key()).split("~")).toList();
         } catch (Exception e) {
             return null; //This only can be set through BotSender
         }

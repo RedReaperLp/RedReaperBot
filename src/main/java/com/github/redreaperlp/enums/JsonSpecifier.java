@@ -9,15 +9,15 @@ public enum JsonSpecifier {
 
     NAME("name"),
 
-    GUILD("guild"),
-    USERS("users"),
+    GUILD("gld"),
+    USERS("usr"),
 
     STORAGE("storage"),
 
-    CHANNEL_CONFIG("channelConfig"),
+    CHANNEL_CONFIG("chanConf"),
 
-    MESSAGE_ASSOCIATION("messageAssociation"),
-    BAD_MESSAGES("badMessages"),
+    MESSAGE_ASSOCIATION("msgAssos"),
+    BAD_MESSAGES("bMsg"),
 
 
     CONTROL("control"),
@@ -29,10 +29,10 @@ public enum JsonSpecifier {
 
     PATH("path"), // Layer 2
 
-    PERMISSIONS("permissions"), // Layer 2
-    PERMISSION_ROLES("roles"), // Layer 3
-    PERMISSION_USERS("users"), // Layer 3
-    TARGET_IP("targetIp"), // Layer 3)
+    PERMISSIONS("perms"), // Layer 2
+    PERMISSION_ROLES("rls"), // Layer 3
+    PERMISSION_USERS("usr"), // Layer 3
+    TARGET_IP("tgIP"), // Layer 3)
 
 
     ;

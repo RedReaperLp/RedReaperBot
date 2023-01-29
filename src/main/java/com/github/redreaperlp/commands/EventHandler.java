@@ -7,6 +7,7 @@ import com.github.redreaperlp.commands.message.MessageHandler;
 import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.IDEnum;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
+import com.github.redreaperlp.json.storage.control.EPermission;
 import com.github.redreaperlp.json.storage.messages.OAssociation;
 import com.github.redreaperlp.networking.Codec;
 import com.github.redreaperlp.networking.EMessageAction;
@@ -62,9 +63,10 @@ public class EventHandler extends ListenerAdapter {
         int conrolableID = 0;
         try {
             conrolableID = e.getOption("id").getAsInt();
-            if (hasPermission(e.getGuild(), conrolableID, e.getMember())) {
+            if (hasPermission(e.getGuild(), conrolableID, e.getMember(), EPermission.PERMISSION_PANEL)) {
+                String name = RedReaperBot.control.program(e.getGuild(), conrolableID);
                 MessageEmbed eb = new EmbedBuilder()
-                        .setTitle(RedReaperBot.control.program(e.getGuild(), conrolableID))
+                        .setTitle(name != "" ? name : "Title could not be Load!")
                         .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1069017159877009438/PanelBanner.png")
                         .addField("Control Panel", "This is the control panel for the program " + RedReaperBot.control.program(e.getGuild(), conrolableID), false)
                         .addField("Start", "Click button to start the program", true)
@@ -85,21 +87,22 @@ public class EventHandler extends ListenerAdapter {
                 e.reply("You dont have permission to use this panel!").setEphemeral(true).queue();
             }
         } catch (Exception ex) {
+
             //TODO: send all panel ids if user has permission
         }
 
     }
 
-    public boolean hasPermission(Guild g, int conrolableID, Member member) {
+    public boolean hasPermission(Guild g, int conrolableID, Member member, EPermission perm) {
         boolean hasPermission = false;
-        List<String> users = RedReaperBot.control.users(g, conrolableID);
+        List<String> users = RedReaperBot.control.users(g, perm, conrolableID);
         if (users != null) {
             if (users.contains(member.getId())) {
                 hasPermission = true;
             }
         }
         if (!hasPermission) {
-            List<String> roles = RedReaperBot.control.roles(g, conrolableID);
+            List<String> roles = RedReaperBot.control.roles(g, perm, conrolableID);
             if (roles != null) {
                 List<Role> userRoles = member.getRoles();
                 for (Role role : userRoles) {
@@ -181,7 +184,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case START -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_START)) {
                     e.deferReply().setEphemeral(true).queue();
                     String conrolableID = idSplit[1];
                     EMessageAction.CONTROL_ID.value(conrolableID + "*1");
@@ -193,7 +196,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case STOP -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STOP)) {
                     e.deferReply().setEphemeral(true).queue();
                     String conrolableID = idSplit[1];
                     EMessageAction.CONTROL_ID.value(conrolableID + "*2");
@@ -205,7 +208,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case LOG -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_LOG)) {
                     e.deferReply().setEphemeral(true).queue();
                     String conrolableID = idSplit[1];
                     EMessageAction.CONTROL_ID.value(conrolableID + "*3");
@@ -217,7 +220,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case STATUS -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STATUS)) {
                     e.deferReply().setEphemeral(true).queue();
                     String conrolableID = idSplit[1];
                     EMessageAction.CONTROL_ID.value(conrolableID + "*4");
@@ -229,7 +232,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case RESTART -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_RESTART)) {
                     e.deferReply().setEphemeral(true).queue();
                     String conrolableID = idSplit[1];
                     EMessageAction.CONTROL_ID.value(conrolableID + "*5");

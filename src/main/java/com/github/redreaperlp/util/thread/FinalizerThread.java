@@ -12,7 +12,7 @@ public class FinalizerThread implements Runnable{
             RedReaperBot.usersettings.finalizer();
             RedReaperBot.authTokens.finalizer();
             try {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUnit.MINUTES.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
