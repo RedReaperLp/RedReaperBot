@@ -7,11 +7,12 @@ public enum EMessageAction {
     PING(33),
     PONG(34),
 
-    INTERACTION_OPTIONS(50),    // 50-59
     CONTROL_ID(35), // [1] = Start, [2] = Stop, [3] = Log, [4] = Status, [5] = Restart
+    INTERACTION_OPTIONS(50),    // 50-59
 
-    ACCESS(800),
-    ERROR(404)
+    ANSWER(100),
+    ERROR(404),
+    ACCESS(800)
 
     ;
 
@@ -42,5 +43,4 @@ public enum EMessageAction {
     public void value(String value) {
         this.value = value;
     }
-
 }

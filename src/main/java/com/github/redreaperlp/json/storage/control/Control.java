@@ -83,4 +83,16 @@ public class Control {
             return null; //This only can be set through BotSender
         }
     }
+
+    public String ipAdress(Guild g, int id) {
+        return ipAdress(g.getId(), id);
+    }
+
+    public String ipAdress(String guild, int id) {
+        try {
+            return controlable(guild, id).getString(JsonSpecifier.TARGET_IP.key());
+        } catch (Exception e) {
+            return null; //This only can be set through BotSender
+        }
+    }
 }

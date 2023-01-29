@@ -11,8 +11,6 @@ import com.github.redreaperlp.json.storage.channel.JChannelConfigurations;
 import com.github.redreaperlp.json.storage.control.Control;
 import com.github.redreaperlp.json.storage.messages.JBadMessages;
 import com.github.redreaperlp.json.storage.messages.JMessageAssociation;
-import com.github.redreaperlp.json.storage.programs.Programs;
-import com.github.redreaperlp.json.storage.programs.permissions.Permissions;
 import com.github.redreaperlp.json.storage.user.stats.util.JChatPoints;
 import com.github.redreaperlp.json.token.JToken;
 import com.github.redreaperlp.networking.Receiver;
@@ -31,6 +29,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.Permissions;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -44,7 +43,6 @@ public class RedReaperBot {
     public static JMessageAssociation messageAssociation = new JMessageAssociation();
     public static JBadMessages badMessages = new JBadMessages();
     public static Control control = new Control();
-    public static Programs programs = new Programs();
     public static Permissions permissions = new Permissions();
     public static JToken authTokens = new JToken();
 

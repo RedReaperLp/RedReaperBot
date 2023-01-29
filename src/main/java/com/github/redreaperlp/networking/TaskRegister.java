@@ -1,9 +1,11 @@
 package com.github.redreaperlp.networking;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskRegister {
-    public static List<String> taskIDs;
+    public static List<String> taskIDs = new ArrayList<>();
+    public static List<String> doneTaskIDs = new ArrayList<>();
 
     public static String createTaskID() {
         String taskID = "";
@@ -20,9 +22,13 @@ public class TaskRegister {
 
     public static void removeTaskID(String taskID) {
         taskIDs.remove(taskID);
+        doneTaskIDs.add(taskID);
     }
 
     public static boolean containsTaskID(String taskID) {
         return taskIDs.contains(taskID);
+    }
+    public static boolean containsDoneTaskID(String taskID) {
+        return doneTaskIDs.contains(taskID);
     }
 }

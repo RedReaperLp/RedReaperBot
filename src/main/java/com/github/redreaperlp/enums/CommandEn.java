@@ -99,7 +99,7 @@ public enum CommandEn {
      * - - - Index: {@link #optionName(int) CommandEn.PANEL.optionName(0);} <br>
      */
     PANEL("panel", "Opens the Panel for your Distanced Server",
-            new CommandOptions("id", "The ID of the Control Panel", true, OptionType.INTEGER)
+            new CommandOptions("id", "The ID of the Control Panel", false, OptionType.INTEGER)
     ),
     ;
 

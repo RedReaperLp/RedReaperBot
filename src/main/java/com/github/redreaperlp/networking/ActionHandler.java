@@ -23,6 +23,7 @@ public class ActionHandler implements Runnable {
         String auth = action.get(EMessageAction.AUTHENTICATE);
         String ping = action.get(EMessageAction.PING);
         String pong = action.get(EMessageAction.PONG);
+        String answer = action.get(EMessageAction.ANSWER);
         String interactOptions = action.get(EMessageAction.INTERACTION_OPTIONS);
         EMessageAction.PONG.value(ping);
         EMessageAction.AUTHENTICATE.value(auth);
@@ -34,28 +35,39 @@ public class ActionHandler implements Runnable {
                 send(port, Codec.encode(EMessageAction.ACCESS, EMessageAction.PONG));
             }
         } else return;
-        System.out.println("Interact options: " + interactOptions);
-        if (interactOptions != null) {
-            try {
-                JSONObject options = new JSONObject(interactOptions);
-                for (Iterator it = options.keys(); it.hasNext(); ) {
-                    String key = (String) it.next();
-                    JSONObject option = options.getJSONObject(key);
-                    String guildID = RedReaperBot.authTokens.getGuildID(auth);
-                    JSONObject guild = RedReaperBot.servers.getGuild(guildID);
-                    if (!guild.has(JsonSpecifier.CONTROL.key())) {
-                        guild.put(JsonSpecifier.CONTROL.key(), new JSONObject());
-                    }
-                    JSONObject control = guild.getJSONObject(JsonSpecifier.CONTROL.key());
-                    control.put(key, option.put(JsonSpecifier.TARGET_IP.key(), action.IP().getHostName()));
-
-                    RedReaperBot.servers.changes();
-                }
-            } catch (JSONException e) {
-                EMessageAction.ERROR.value("Invalid JSON");
+        if (pong != null) {
+            if (answer != null) {
+                AnswerUtil.addAnswer(pong, answer);
             }
-            send(port, Codec.encode(EMessageAction.ACCESS, EMessageAction.PONG, EMessageAction.ERROR));
+            if (TaskRegister.containsTaskID(pong)) {
+                TaskRegister.removeTaskID(pong);
+            }
             return;
+        }
+        if (!TaskRegister.containsDoneTaskID(ping)) {
+            System.out.println("Interact options: " + interactOptions);
+            if (interactOptions != null) {
+                try {
+                    JSONObject options = new JSONObject(interactOptions);
+                    for (Iterator it = options.keys(); it.hasNext(); ) {
+                        String key = (String) it.next();
+                        JSONObject option = options.getJSONObject(key);
+                        String guildID = RedReaperBot.authTokens.getGuildID(auth);
+                        JSONObject guild = RedReaperBot.servers.getGuild(guildID);
+                        if (!guild.has(JsonSpecifier.CONTROL.key())) {
+                            guild.put(JsonSpecifier.CONTROL.key(), new JSONObject());
+                        }
+                        JSONObject control = guild.getJSONObject(JsonSpecifier.CONTROL.key());
+                        control.put(key, option.put(JsonSpecifier.TARGET_IP.key(), action.IP().getHostName() + ":" + portString));
+
+                        RedReaperBot.servers.changes();
+                    }
+                } catch (JSONException e) {
+                    EMessageAction.ERROR.value("Invalid JSON");
+                }
+                send(port, Codec.encode(EMessageAction.ACCESS, EMessageAction.PONG, EMessageAction.ERROR));
+                return;
+            }
         }
         EMessageAction.ACCESS.value("200");
         send(port, Codec.encode(EMessageAction.PONG, EMessageAction.AUTHENTICATE, EMessageAction.ACCESS));

@@ -14,6 +14,12 @@ public enum IDEnum {
 
     WORD("word", "word"),
 
+    START("Start", "start"),
+    STOP("Stop", "stop"),
+    LOG("Log", "log"),
+    STATUS("Status", "status"),
+    RESTART("Restart", "restart"),
+
 
 
     ;

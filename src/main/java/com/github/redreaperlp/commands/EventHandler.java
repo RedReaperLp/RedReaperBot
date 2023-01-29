@@ -8,6 +8,9 @@ import com.github.redreaperlp.enums.CommandEn;
 import com.github.redreaperlp.enums.IDEnum;
 import com.github.redreaperlp.json.storage.channel.ChannelConfigEn;
 import com.github.redreaperlp.json.storage.messages.OAssociation;
+import com.github.redreaperlp.networking.Codec;
+import com.github.redreaperlp.networking.EMessageAction;
+import com.github.redreaperlp.networking.Sender;
 import com.github.redreaperlp.util.thread.DeleterThread;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -56,19 +59,49 @@ public class EventHandler extends ListenerAdapter {
     }
 
     private void panel(SlashCommandInteractionEvent e) {
-        int conrolableID = e.getOption("id").getAsInt();
-        System.out.println("Panel: " + conrolableID);
+        int conrolableID = 0;
+        try {
+            conrolableID = e.getOption("id").getAsInt();
+            if (hasPermission(e.getGuild(), conrolableID, e.getMember())) {
+                MessageEmbed eb = new EmbedBuilder()
+                        .setTitle(RedReaperBot.control.program(e.getGuild(), conrolableID))
+                        .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1069017159877009438/PanelBanner.png")
+                        .addField("Control Panel", "This is the control panel for the program " + RedReaperBot.control.program(e.getGuild(), conrolableID), false)
+                        .addField("Start", "Click button to start the program", true)
+                        .addField("Stop", "Click button to stop the program", true)
+                        .addField("Logs", "Click button to see the logs", false)
+                        .addField("Status", "Click button to see the status", false)
+                        .addField("Restart", "Click button to restart the program", false)
+                        .setThumbnail(e.getGuild().getIconUrl())
+                        .setColor(0xff00).build();
+                e.replyEmbeds(eb).addActionRow(
+                        Button.primary(IDEnum.START.key() + "-" + conrolableID, IDEnum.START.key()),
+                        Button.danger(IDEnum.STOP.key() + "-" + conrolableID, IDEnum.STOP.key()),
+                        Button.secondary(IDEnum.LOG.key() + "-" + conrolableID, IDEnum.LOG.key()),
+                        Button.secondary(IDEnum.STATUS.key() + "-" + conrolableID, IDEnum.STATUS.key()),
+                        Button.secondary(IDEnum.RESTART.key() + "-" + conrolableID, IDEnum.RESTART.key())
+                ).queue();
+            } else {
+                e.reply("You dont have permission to use this panel!").setEphemeral(true).queue();
+            }
+        } catch (Exception ex) {
+            //TODO: send all panel ids if user has permission
+        }
+
+    }
+
+    public boolean hasPermission(Guild g, int conrolableID, Member member) {
         boolean hasPermission = false;
-        List<String> users = RedReaperBot.control.users(e.getGuild(), conrolableID);
+        List<String> users = RedReaperBot.control.users(g, conrolableID);
         if (users != null) {
-            if (users.contains(e.getUser().getId())) {
+            if (users.contains(member.getId())) {
                 hasPermission = true;
             }
         }
         if (!hasPermission) {
-            List<String> roles = RedReaperBot.control.roles(e.getGuild(), conrolableID);
+            List<String> roles = RedReaperBot.control.roles(g, conrolableID);
             if (roles != null) {
-                List<Role> userRoles = e.getMember().getRoles();
+                List<Role> userRoles = member.getRoles();
                 for (Role role : userRoles) {
                     if (roles.contains(role.getId())) {
                         hasPermission = true;
@@ -77,28 +110,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
         }
-        if (hasPermission) {
-            MessageEmbed eb = new EmbedBuilder()
-                    .setTitle(RedReaperBot.control.program(e.getGuild(), conrolableID))
-                    .setImage("https://cdn.discordapp.com/attachments/1060601917878829226/1069017159877009438/PanelBanner.png")
-                    .addField("Control Panel", "This is the control panel for the program " + RedReaperBot.control.program(e.getGuild(), conrolableID), false)
-                    .addField("Start", "Click button to start the program", true)
-                    .addField("Stop", "Click button to stop the program", true)
-                    .addField("Logs", "Click button to see the logs", false)
-                    .addField("Status", "Click button to see the status", false)
-                    .addField("Restart", "Click button to restart the program", false)
-                    .setThumbnail(e.getGuild().getIconUrl())
-                    .setColor(0xff00).build();
-            e.replyEmbeds(eb).addActionRow(
-                    Button.primary("start" + conrolableID, "Start"),
-                    Button.danger("stop" + conrolableID, "Stop"),
-                    Button.secondary("logs" + conrolableID, "Logs"),
-                    Button.secondary("status" + conrolableID, "Status"),
-                    Button.secondary("restart" + conrolableID, "Restart")
-            ).queue();
-        } else {
-            e.reply("You dont have permission to use this panel!").setEphemeral(true).queue();
-        }
+        return hasPermission;
     }
 
     private void generateToken(SlashCommandInteractionEvent e) {
@@ -135,12 +147,15 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onButtonInteraction(ButtonInteractionEvent e) {
         String id = e.getComponentId();
+        String idSplit[] = id.split("-");
+        id = idSplit[0];
+        System.out.println("Button: " + id);
         Message space = e.getMessage();
         IDEnum idEnum = IDEnum.fromKey(id);
         Guild guild = guildByEmbed(e);
-        OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
         switch (idEnum) {
             case DELETE_BADWORD -> {
+                OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
                 if (association != null) {
                     association.targetMSG().delete().queue();
                     e.reply("The Message has been Deleted!").setEphemeral(true).queue();
@@ -154,6 +169,7 @@ public class EventHandler extends ListenerAdapter {
                 space.delete().queue();
             }
             case KEEP_BADWORD -> {
+                OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
                 e.deferReply().queue();
                 space.delete().queue();
                 boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(association, guild);
@@ -162,6 +178,66 @@ public class EventHandler extends ListenerAdapter {
                 } else {
                     e.getHook().sendMessage("The association has been removed!").queue();
                     RedReaperBot.servers.changes();
+                }
+            }
+            case START -> {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                    e.deferReply().setEphemeral(true).queue();
+                    String conrolableID = idSplit[1];
+                    EMessageAction.CONTROL_ID.value(conrolableID + "*1");
+                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                } else {
+                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                }
+            }
+            case STOP -> {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                    e.deferReply().setEphemeral(true).queue();
+                    String conrolableID = idSplit[1];
+                    EMessageAction.CONTROL_ID.value(conrolableID + "*2");
+                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                } else {
+                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                }
+            }
+            case LOG -> {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                    e.deferReply().setEphemeral(true).queue();
+                    String conrolableID = idSplit[1];
+                    EMessageAction.CONTROL_ID.value(conrolableID + "*3");
+                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                } else {
+                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                }
+            }
+            case STATUS -> {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                    e.deferReply().setEphemeral(true).queue();
+                    String conrolableID = idSplit[1];
+                    EMessageAction.CONTROL_ID.value(conrolableID + "*4");
+                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                } else {
+                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                }
+            }
+            case RESTART -> {
+                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember())) {
+                    e.deferReply().setEphemeral(true).queue();
+                    String conrolableID = idSplit[1];
+                    EMessageAction.CONTROL_ID.value(conrolableID + "*5");
+                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                } else {
+                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
                 }
             }
         }
