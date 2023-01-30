@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +53,7 @@ public class Sender implements Runnable {
                         break;
                     case 2:
                         answer = answer.replaceFirst("%line", "").replace("%line", "\n");
-                        e.getHook().sendFiles(FileUpload.fromData(answer.getBytes(), "Log.txt")).complete();
+                        e.getHook().sendFiles(FileUpload.fromData(answer.getBytes(StandardCharsets.UTF_8), "Log.txt")).complete();
                         break;
                 }
 
@@ -62,6 +63,7 @@ public class Sender implements Runnable {
                 e.getHook().sendMessage("No answer received").queue();
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             e.getHook().sendMessage("No answer received").queue();
         }
     }
