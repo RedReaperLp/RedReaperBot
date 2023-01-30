@@ -57,6 +57,7 @@ public class Sender implements Runnable {
                             writer.flush();
                             writer.close();
                             e.getHook().sendFiles(FileUpload.fromData(file)).queue();
+                            file.delete();
                         } catch (IOException ex) {
                             e.getHook().sendMessage("Something went wrong!");
                         }

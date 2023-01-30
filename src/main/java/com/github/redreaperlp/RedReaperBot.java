@@ -29,12 +29,15 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.Permissions;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class RedReaperBot {
+public class RedReaperBot implements Runnable {
 
     public static JServers servers;
     public static JChatPoints chatPoints;
@@ -136,21 +139,6 @@ public class RedReaperBot {
         build.enableIntents(GatewayIntent.SCHEDULED_EVENTS);
     }
 
-    public void prepareJsonSpecifier() {
-        try {
-            JsonSpecifier.STATS.defaultValue(
-                    new JSONObject()
-                            .put(JsonSpecifier.STATS_CHATPOINTS_POINTS.key(), 0)
-                            .put(JsonSpecifier.STATS_CHATPOINTS_LEVEL.key(), 0)
-            );
-            JsonSpecifier.GUILD.defaultValue(
-                    new JSONObject());
-
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public SlashCommandData prepareCommand(CommandEn c) {
         SlashCommandData command = Commands.slash(c.key(), c.description());
         CommandOptions[] ops = c.options();
@@ -171,5 +159,22 @@ public class RedReaperBot {
             length--;
         }
         return result.toString();
+    }
+
+    @Override
+    public void run() {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            try {
+                String line = reader.readLine();
+                if (line.equalsIgnoreCase("stop")) {
+                    System.out.println(YELLOW + "*** Stopping Bot ***" + RESET);
+                    jda.shutdown();
+                    System.exit(0);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

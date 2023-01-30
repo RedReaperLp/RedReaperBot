@@ -8,6 +8,5 @@ public class SaveCaller implements Runnable{
         RedReaperBot.servers.finalizer();
         RedReaperBot.usersettings.finalizer();
         RedReaperBot.authTokens.finalizer();
-        System.exit(0);
     }
 }
