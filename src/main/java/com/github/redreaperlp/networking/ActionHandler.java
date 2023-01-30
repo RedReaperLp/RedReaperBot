@@ -78,6 +78,7 @@ public class ActionHandler implements Runnable {
     public void send(int port, String message) {
         Socket socket = null;
         try {
+            System.out.println("Received connection from " + action.IP() + ":" + port);
             socket = new Socket(action.IP(), port);
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             writer.write(message);

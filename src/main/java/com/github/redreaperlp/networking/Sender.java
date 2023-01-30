@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 
 public class Sender implements Runnable {
@@ -33,7 +34,7 @@ public class Sender implements Runnable {
             try {
                 counter++;
                 new Thread(this).start();
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(3);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -50,17 +51,8 @@ public class Sender implements Runnable {
                         e.getHook().sendMessage(answer.replace("%line", "\n")).queue();
                         break;
                     case 2:
-                        try {
-                            File file = new File("Log.txt");
-                            FileWriter writer = new FileWriter(file);
-                            writer.write(answer.replaceFirst("%line", "").replace("%line", "\n"));
-                            writer.flush();
-                            writer.close();
-                            e.getHook().sendFiles(FileUpload.fromData(file)).queue();
-                            file.delete();
-                        } catch (IOException ex) {
-                            e.getHook().sendMessage("Something went wrong!");
-                        }
+                        answer = answer.replaceFirst("%line", "").replace("%line", "\n");
+                        e.getHook().sendFiles(FileUpload.fromData(answer.getBytes(), "Log.txt")).complete();
                         break;
                 }
 
@@ -69,7 +61,7 @@ public class Sender implements Runnable {
             } else {
                 e.getHook().sendMessage("No answer received").queue();
             }
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             e.getHook().sendMessage("No answer received").queue();
         }
     }
