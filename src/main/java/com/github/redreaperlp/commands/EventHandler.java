@@ -153,8 +153,8 @@ public class EventHandler extends ListenerAdapter {
         String idSplit[] = id.split("-");
         id = idSplit[0];
         System.out.println("Button: " + id);
-        Message space = e.getMessage();
         IDEnum idEnum = IDEnum.fromKey(id);
+        Message space = e.getMessage();
         Guild guild = guildByEmbed(e);
         switch (idEnum) {
             case DELETE_BADWORD -> {
@@ -172,76 +172,88 @@ public class EventHandler extends ListenerAdapter {
                 space.delete().queue();
             }
             case KEEP_BADWORD -> {
-                OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
-                e.deferReply().queue();
-                space.delete().queue();
-                boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(association, guild);
-                if (!foundAssociation) {
-                    e.getHook().sendMessage("There was no association found for this message!").queue();
-                } else {
-                    e.getHook().sendMessage("The association has been removed!").queue();
-                    RedReaperBot.servers.changes();
-                }
+                new Thread(() -> {
+                    OAssociation association = RedReaperBot.messageAssociation.getAssociation(guild, space);
+                    e.deferReply().queue();
+                    space.delete().queue();
+                    boolean foundAssociation = RedReaperBot.messageAssociation.removeAssociation(association, guild);
+                    if (!foundAssociation) {
+                        e.getHook().sendMessage("There was no association found for this message!").queue();
+                    } else {
+                        e.getHook().sendMessage("The association has been removed!").queue();
+                        RedReaperBot.servers.changes();
+                    }
+                }).start();
             }
             case START -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_START)) {
-                    e.deferReply().setEphemeral(true).queue();
-                    String conrolableID = idSplit[1];
-                    EMessageAction.CONTROL_ID.value(conrolableID + "*1");
-                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
-                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
-                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
-                } else {
-                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
-                }
+                new Thread(() -> {
+                    if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_START)) {
+                        e.deferReply().setEphemeral(true).queue();
+                        String conrolableID = idSplit[1];
+                        EMessageAction.CONTROL_ID.value(conrolableID + "*1");
+                        String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                        String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                        new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                    } else {
+                        e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                    }
+                }).start();
             }
             case STOP -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STOP)) {
-                    e.deferReply().setEphemeral(true).queue();
-                    String conrolableID = idSplit[1];
-                    EMessageAction.CONTROL_ID.value(conrolableID + "*2");
-                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
-                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
-                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
-                } else {
-                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
-                }
+                new Thread(() -> {
+                    if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STOP)) {
+                        e.deferReply().setEphemeral(true).queue();
+                        String conrolableID = idSplit[1];
+                        EMessageAction.CONTROL_ID.value(conrolableID + "*2");
+                        String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                        String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                        new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                    } else {
+                        e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                    }
+                }).start();
             }
             case LOG -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_LOG)) {
-                    e.deferReply().setEphemeral(true).queue();
-                    String conrolableID = idSplit[1];
-                    EMessageAction.CONTROL_ID.value(conrolableID + "*3");
-                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
-                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
-                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
-                } else {
-                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
-                }
+                new Thread(() -> {
+                    if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_LOG)) {
+                        e.deferReply().setEphemeral(true).queue();
+                        String conrolableID = idSplit[1];
+                        EMessageAction.CONTROL_ID.value(conrolableID + "*3");
+                        String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                        String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                        new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                    } else {
+                        e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                    }
+                }).start();
             }
             case STATUS -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STATUS)) {
-                    e.deferReply().setEphemeral(true).queue();
-                    String conrolableID = idSplit[1];
-                    EMessageAction.CONTROL_ID.value(conrolableID + "*4");
-                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
-                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
-                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
-                } else {
-                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
-                }
+                new Thread(() -> {
+                    if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_STATUS)) {
+                        e.deferReply().setEphemeral(true).queue();
+                        String conrolableID = idSplit[1];
+                        EMessageAction.CONTROL_ID.value(conrolableID + "*4");
+                        String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                        String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                        new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                    } else {
+                        e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                    }
+                }).start();
             }
             case RESTART -> {
-                if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_RESTART)) {
-                    e.deferReply().setEphemeral(true).queue();
-                    String conrolableID = idSplit[1];
-                    EMessageAction.CONTROL_ID.value(conrolableID + "*5");
-                    String sendable = Codec.encode(EMessageAction.CONTROL_ID);
-                    String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
-                    new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
-                } else {
-                    e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
-                }
+                new Thread(() -> {
+                    if (hasPermission(e.getGuild(), Integer.parseInt(idSplit[1]), e.getMember(), EPermission.PERMISSION_RESTART)) {
+                        e.deferReply().setEphemeral(true).queue();
+                        String conrolableID = idSplit[1];
+                        EMessageAction.CONTROL_ID.value(conrolableID + "*5");
+                        String sendable = Codec.encode(EMessageAction.CONTROL_ID);
+                        String[] ip = RedReaperBot.control.ipAdress(e.getGuild(), Integer.parseInt(conrolableID)).split(":");
+                        new Sender(ip[0], Integer.parseInt(ip[1]), sendable, e);
+                    } else {
+                        e.reply("You dont have the permission to do this!").setEphemeral(true).queue();
+                    }
+                }).start();
             }
         }
     }

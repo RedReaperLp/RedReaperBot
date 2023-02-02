@@ -25,6 +25,8 @@ public class Sender implements Runnable {
         this.port = port;
         this.e = e;
 
+        int types = Integer.parseInt(sendable.split("\\*")[1]);
+
         int counter = 1;
         while (TaskRegister.containsTaskID(taskID)) {
             if (counter > 5) {
@@ -35,7 +37,7 @@ public class Sender implements Runnable {
             try {
                 counter++;
                 new Thread(this).start();
-                TimeUnit.SECONDS.sleep(3);
+                TimeUnit.SECONDS.sleep(types == 3 ? 5 : 1);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
